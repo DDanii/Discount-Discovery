@@ -1,7 +1,7 @@
-import sourceData from '../../store/storeP.json'
+import sourceData from '../../../store/storeP.json'
 import { product } from "./product";
 import parse from 'node-html-parser'
-import type { shopConfig } from '../../types/ShopConfig'
+import type { shopConfig } from '../../../types/ShopConfig'
 
 const shopConfigs = [] as shopConfig[]
 const products = [] as product[]
