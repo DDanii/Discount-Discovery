@@ -19,7 +19,7 @@ const products = ref([] as product[])
 onMounted(async () => {
   axios.get('/products')
   .then(function (response) {
-    console.log(response)
+    console.log(response.data.json)
   })
 
 })
