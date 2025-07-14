@@ -1,15 +1,22 @@
+
 <template>
+  
   <div>
     <nav>
-      <Nuxtlink to="/">
-            <button></button>
-            <button></button>
-            <button></button>
-          </Nuxtlink>
-          <Nuxtlink to="/settings">Settings</Nuxtlink>
-
+      <NuxtLink to="/">
+        <button></button>
+        <button></button>
+        <button></button>
+      </NuxtLink>
+      <NuxtLink to="/AppSettings">Settings</NuxtLink>
     </nav>
-    <NuxtRouteAnnouncer />
-    <NuxtWelcome />
+    <NuxtPage />
   </div>
 </template>
+
+<style>
+body {
+  background-color: black;
+  color: aliceblue;
+}
+</style>

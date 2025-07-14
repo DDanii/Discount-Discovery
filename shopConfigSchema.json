@@ -1,0 +1,434 @@
+{
+  "$ref": "#/definitions/ShopConfig",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ConcatParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "first": {
+          "description": "Default value 'data'",
+          "type": "string"
+        },
+        "method": {
+          "const": "Concat",
+          "type": "string"
+        },
+        "second": {
+          "description": "Default value 'data'",
+          "type": "string"
+        }
+      },
+      "required": [
+        "method"
+      ],
+      "type": "object"
+    },
+    "CreateArrayParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "const": "CreateArray",
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "method",
+        "name"
+      ],
+      "type": "object"
+    },
+    "DeepCopyParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "const": "DeepCopy",
+          "type": "string"
+        }
+      },
+      "required": [
+        "method"
+      ],
+      "type": "object"
+    },
+    "FetchParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "headersSource": {
+          "type": "string"
+        },
+        "method": {
+          "const": "Fetch",
+          "type": "string"
+        }
+      },
+      "required": [
+        "method"
+      ],
+      "type": "object"
+    },
+    "ForEachParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "const": "ForEach",
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/definitions/ParseStep"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "method",
+        "source",
+        "steps"
+      ],
+      "type": "object"
+    },
+    "HTMLCloneParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "destination": {
+          "type": "string"
+        },
+        "method": {
+          "const": "HTMLClone",
+          "type": "string"
+        }
+      },
+      "required": [
+        "method",
+        "destination"
+      ],
+      "type": "object"
+    },
+    "HTMLQuerySelectorParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "all": {
+          "type": "boolean"
+        },
+        "method": {
+          "const": "HTMLQuerySelector",
+          "type": "string"
+        },
+        "selector": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "method",
+        "selector"
+      ],
+      "type": "object"
+    },
+    "LiteralParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "type": "string"
+        },
+        "destination": {
+          "description": "Default value 'data'",
+          "type": "string"
+        },
+        "method": {
+          "const": "Literal",
+          "type": "string"
+        }
+      },
+      "required": [
+        "method",
+        "data"
+      ],
+      "type": "object"
+    },
+    "ParallelProcessParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "const": "ParallelProcess",
+          "description": "Untested Uses deepCopy",
+          "type": "string"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/definitions/ParseStep"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "method",
+        "steps"
+      ],
+      "type": "object"
+    },
+    "ParseHTMLParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "const": "ParseHTML",
+          "description": "The output HTMLElement can't be used in methods using deepCopy because it contains circular structure",
+          "type": "string"
+        }
+      },
+      "required": [
+        "method"
+      ],
+      "type": "object"
+    },
+    "ParseJSONParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "const": "ParseJSON",
+          "type": "string"
+        }
+      },
+      "required": [
+        "method"
+      ],
+      "type": "object"
+    },
+    "ParseStep": {
+      "additionalProperties": false,
+      "properties": {
+        "stepParameters": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/FetchParameters"
+            },
+            {
+              "$ref": "#/definitions/LiteralParameters"
+            },
+            {
+              "$ref": "#/definitions/SetPropParameters"
+            },
+            {
+              "$ref": "#/definitions/ParseJSONParameters"
+            },
+            {
+              "$ref": "#/definitions/ForEachParameters"
+            },
+            {
+              "$ref": "#/definitions/CreateArrayParameters"
+            },
+            {
+              "$ref": "#/definitions/PushToArrayParameters"
+            },
+            {
+              "$ref": "#/definitions/ParseHTMLParameters"
+            },
+            {
+              "$ref": "#/definitions/ParallelProcessParameters"
+            },
+            {
+              "$ref": "#/definitions/HTMLQuerySelectorParameters"
+            },
+            {
+              "$ref": "#/definitions/ConcatParameters"
+            },
+            {
+              "$ref": "#/definitions/ToStringParameters"
+            },
+            {
+              "$ref": "#/definitions/HTMLCloneParameters"
+            },
+            {
+              "$ref": "#/definitions/DeepCopyParameters"
+            },
+            {
+              "$ref": "#/definitions/SliceParameters"
+            },
+            {
+              "$ref": "#/definitions/SplitParameters"
+            },
+            {
+              "$ref": "#/definitions/ReplaceParameters"
+            },
+            {
+              "$ref": "#/definitions/SpreadParameters"
+            }
+          ]
+        }
+      },
+      "required": [
+        "stepParameters"
+      ],
+      "type": "object"
+    },
+    "PushToArrayParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "array": {
+          "type": "string"
+        },
+        "data": {
+          "type": "string"
+        },
+        "method": {
+          "const": "PushToArray",
+          "description": "Uses deepCopy",
+          "type": "string"
+        }
+      },
+      "required": [
+        "method",
+        "array",
+        "data"
+      ],
+      "type": "object"
+    },
+    "ReplaceParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "all": {
+          "type": "boolean"
+        },
+        "method": {
+          "const": "Replace",
+          "type": "string"
+        },
+        "newValue": {
+          "type": "string"
+        },
+        "searchValue": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "method",
+        "searchValue",
+        "newValue"
+      ],
+      "type": "object"
+    },
+    "SetPropParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "destination": {
+          "description": "Default value 'data'",
+          "type": "string"
+        },
+        "destinationProp": {
+          "type": "string"
+        },
+        "method": {
+          "const": "SetProp",
+          "type": "string"
+        },
+        "source": {
+          "description": "Default value 'data'",
+          "type": "string"
+        },
+        "sourceProp": {
+          "type": [
+            "string",
+            "number"
+          ]
+        }
+      },
+      "required": [
+        "method"
+      ],
+      "type": "object"
+    },
+    "ShopConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "steps": {
+          "items": {
+            "$ref": "#/definitions/ParseStep"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "steps"
+      ],
+      "type": "object"
+    },
+    "SliceParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "type": "number"
+        },
+        "method": {
+          "const": "Slice",
+          "type": "string"
+        },
+        "start": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "method",
+        "start"
+      ],
+      "type": "object"
+    },
+    "SplitParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "method": {
+          "const": "Split",
+          "type": "string"
+        },
+        "separator": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "method"
+      ],
+      "type": "object"
+    },
+    "SpreadParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "first": {
+          "description": "Default value 'data'",
+          "type": "string"
+        },
+        "method": {
+          "const": "Spread",
+          "type": "string"
+        },
+        "second": {
+          "description": "Default value 'data'",
+          "type": "string"
+        }
+      },
+      "required": [
+        "method"
+      ],
+      "type": "object"
+    },
+    "ToStringParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "const": "ToString",
+          "type": "string"
+        }
+      },
+      "required": [
+        "method"
+      ],
+      "type": "object"
+    }
+  }
+}
