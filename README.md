@@ -30,8 +30,8 @@ docker compose up -d
 Deploy Discount-Discovery:
 
 ```bash
-docker pull DDanii/Discount-Discovery
-docker run -d --name discount-discovery -p 3000:3000 DDanii/Discount-Discovery --mount type=bind,src=../config,dst=/config
+docker pull ddanii/discount-discovery
+docker run -d --name discount-discovery -p 3000:3000 ddanii/discount-discovery --mount type=bind,src=../config,dst=/config
 ```
 
 
