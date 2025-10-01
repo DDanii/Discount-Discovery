@@ -1,0 +1,12 @@
+/.nuxt
+/.output
+/node_modules
+/media
+.gitignore
+README.md
+
+shopConfigSchema.json
+.env
+dev.db
+.vscode
+

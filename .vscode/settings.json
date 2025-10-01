@@ -1,5 +1,5 @@
 {
     "yaml.schemas": {
-        "shopConfigSchema.json": "/*.yml"
+        "shopConfigSchema.json": "*store/*.yml"
     }
 }

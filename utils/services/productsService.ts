@@ -1,47 +1,48 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { parse as HTMLParse } from "node-html-parser";
-import type { product } from "../types/product";
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "fs";
-import { type ParseStep, stepType, type SetPropParameters, type ForEachParameters, type PushToArrayParameters, type HTMLQuerySelectorParameters, type ParallelProcessParameters, type ConcatParameters, type SliceParameters, type SplitParameters, type ReplaceParameters, type FetchParameters, type SpreadParameters } from "../types/shopConfig";
+import { readdirSync, readFileSync } from "fs";
+import { type ParseStep, stepType, type SetPropParameters,
+  type ForEachParameters, type PushToArrayParameters, 
+  type ConcatParameters, type SliceParameters, type SplitParameters,
+  type ReplaceParameters, type FetchParameters, type SpreadParameters,
+  type HTMLQuerySelectorParameters, type IfParameters, 
+  type ShopConfig} from "../types/shopConfig";
 import { parse as YamlParse } from "yaml";
 import { shopConfigSchema } from "../validators/shopConfigSchema";
-import filenamifyUrl from "filenamify-url";
+import prisma, { type Product, type Shop } from "../../lib/prisma";
+import { CronJob } from "cron";
 
-const fetchCache = "fetch_cache"
+const cacheDateDifference = 43400000;
+const defaultCron = "0 6 * * *";
+const jobs = [] as CronJob[]
 
-let products = [] as product[];
+let year = (new Date()).getFullYear()
+let month = (new Date()).getMonth()
+let tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
 
 export class ProductsService {
-  /**
-   *
-   */
-  constructor() {
-    mkdirSync(fetchCache, { recursive: true })
-    const cacheFiles = readdirSync(fetchCache, { recursive: false })
-    const now = (new Date()).getTime()
-    for (const fname of cacheFiles) {
-      const fpath = fetchCache + "/" + fname
-      const dif = Math.abs(statSync(fpath).mtime.getTime() - now)
-      if (dif > 43400000)
-        rmSync(fpath)
-    }
 
+  public async createUser(){
+    await prisma.user.upsert({
+      where: { id: 1 },
+      create: { id: 1, name: "Admin", password: "dummy" },
+      update: {}
+    })
+  }
+
+  public async fetch() {
     const files = readdirSync('store')
     for (const fname of files) {
       if (fname.endsWith(".yml"))
-        handleConfigFile(fname)
+        await handleConfigFile(fname)
     }
-  }
-
-  public list(): product[] {
-    return products;
   }
 }
 
-function handleConfigFile(fname: string){
-  try {
+async function handleConfigFile(fname: string){
 
-    const file = readFileSync('store/' + fname, 'utf8')
+  try {
+    const file = readFileSync(`store/${fname}`, 'utf8')
     const raw = YamlParse(file)
     const config = shopConfigSchema.safeParse(raw)
 
@@ -52,10 +53,23 @@ function handleConfigFile(fname: string){
       return 
     }
 
-    const data = { DDParsedProducts: [] }
-    stepsManager(config.data.steps, data).then((data) => {
-      products = products.concat(data.DDParsedProducts)
+    const shop = await prisma.shop.upsert({
+      where: {source: fname},
+      create: {source: fname, name: config.data.name},
+      update: {source: fname, name: config.data.name}
     })
+    
+    const job = new CronJob(config.data.cron ?? defaultCron, async () => {
+      await gatherProducts(config.data, shop)}, null, true //TODO handle timezone
+    )
+    const dates = job.nextDates(2)
+    
+    const diff = (dates[1]?.toMillis() ?? cacheDateDifference) - (dates[0]?.toMillis() ?? 0)
+    if (!shop.lastUpdated || (new Date().getTime() - shop.lastUpdated.getTime()) > diff) {
+      await gatherProducts(config.data, shop);
+    }
+
+    jobs.push(job)
   }
   catch (e) {
     console.log("Shop handle error")
@@ -64,12 +78,60 @@ function handleConfigFile(fname: string){
   }
 }
 
+async function gatherProducts(config: ShopConfig , shop: Shop) {
+  let data = { DDParsedProducts: [], currentYear: year.toString() };
+  year = (new Date()).getFullYear()
+  month = (new Date()).getMonth()
+  tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
+  data = await stepsManager(config.steps, data)
+  
+  data.DDParsedProducts.forEach(async (product: Product) => {
+    await handleProduct(product, config, shop);
+  });
+  
+  await prisma.shop.update({
+    where: { id: shop.id },
+    data: { lastUpdated: new Date() }
+  })
+}
+
+async function handleProduct(product: Product, config: ShopConfig, shop: Shop) {
+  product.startDate = product.startDate ? new Date(product.startDate) : new Date();
+  product.endDate = product.endDate ? new Date(product.endDate) : tomorrow;
+  if (config.autoCorrectYears) {
+    correctYears(product);
+  }
+  await prisma.product.upsert({
+    where: { shopId_externalId: { externalId: product.externalId, shopId: shop.id } },
+    update: { ...product, shopId: shop.id },
+    create: { ...product, shopId: shop.id }
+  });
+}
+
+function correctYears(product: Product): Product {
+  if (month == 11)
+  {
+    if (product.startDate.getMonth() == 0)
+      product.startDate.setFullYear(year + 1)
+    if (product.endDate.getMonth() == 0)
+      product.endDate.setFullYear(year + 1)
+  }
+  else if (month == 0)
+  {
+    if (product.startDate.getMonth() == 11)
+      product.startDate.setFullYear(year - 1)
+    if (product.endDate.getMonth() == 11)
+      product.endDate.setFullYear(year - 1)
+  }
+  return product
+}
+
 async function stepsManager(steps: ParseStep[], data: any): Promise<any> {
   if (!steps) {
     return data
   }
 
-  while (steps.length > 0) {
+  while (steps.length > 0 && steps[0]) {
     data = { ...data, ...(await stepResolver(steps[0], data)) }
     steps.shift()
   }
@@ -104,9 +166,6 @@ async function stepResolver(step: ParseStep, data: any): Promise<any> {
     case stepType.ParseHTML:
       data.data = HTMLParse(data.data);
       break;
-    case stepType.ParallelProcess:
-      data = await ParallelProcess(step.stepParameters, data)
-      break;
     case stepType.HTMLQuerySelector:
       data = HTMLQuerySelector(step.stepParameters, data)
       break;
@@ -134,24 +193,26 @@ async function stepResolver(step: ParseStep, data: any): Promise<any> {
     case stepType.Spread:
       data = SpreadStep(step.stepParameters, data)
       break;
+    case stepType.If:
+      data = await IfStep(step.stepParameters, data)
+      break;
   }
   return data
 }
 
 async function FetchStep(parameters: FetchParameters, data: any): Promise<any> {
-  const cachefile = fetchCache + "/" + filenamifyUrl(data.data)
-  if (existsSync(cachefile)) {
-    data.data = readFileSync(cachefile)
-    return data
-  }
+  console.log("fetching")
   const request = new Request(data.data)
   if (parameters.headersSource) {
     for (const header of data[parameters.headersSource]) {
-      request.headers.set(Object.keys(header)[0], Object.values<string>(header)[0])
+      const key = Object.keys(header)[0];
+      const value = Object.values<string>(header)[0];
+      if (key && value) {
+        request.headers.set(key, value);
+      }
     }
   }
   data.data = await (await fetch(request)).text()
-  writeFileSync(cachefile, data.data)
   return data;
 }
 
@@ -166,23 +227,29 @@ function ConcatStep(step: ConcatParameters, data: any): any {
 }
 
 function pushToArray(parameters: PushToArrayParameters, data: any): any {
-  data[parameters.array].push(deepCopy(data[parameters.data]))
+  data[parameters.array].push(deepCopy(data[parameters.data ?? "data"]))
   return data
 }
 
 async function forEachStep(stepParameters: ForEachParameters, data: any): Promise<any> {
   const source = data[stepParameters.source]
-  for (const element of source) {
-    data.data = element
-    try {
-      data = await stepsManager(deepCopy(stepParameters.steps), data)
+  try {
+    for (const element of source) {
+      data.data = element
+      try {
+        data = await stepsManager(deepCopy(stepParameters.steps), data)
+      }
+      catch (e) {
+        console.log("foreach inner catch")
+        console.log(e)
+        console.log(data.data)
+        continue
+      }
     }
-    catch (e) {
-      console.log("foreach catch")
-      console.log(e)
-      console.log(data.data)
-      continue
-    }
+  }catch(e) {
+    console.log("foreach outer catch")
+    console.log(e)
+    console.log(source)
   }
   return data
 }
@@ -209,27 +276,12 @@ function setProp(stepParameters: SetPropParameters, data: any): any {
   return data
 }
 
-async function ParallelProcess(stepParameters: ParallelProcessParameters, data: any): Promise<any> {
-  const results = [] as any[]
-
-  for (const step of stepParameters.steps) {
-    results.push(await stepResolver(step, deepCopy(data)))
-  }
-  for (const result of results) {
-    data = { ...data, ...result }
-  }
-
-  return data
-}
-
 function HTMLQuerySelector(stepParameters: HTMLQuerySelectorParameters, data: any): any {
   if (stepParameters.all) {
     data.data = (data.data as HTMLElement).querySelectorAll(data[stepParameters.selector])
-
   }
   else {
     data.data = (data.data as HTMLElement).querySelector(data[stepParameters.selector])
-
   }
   return data
 }
@@ -250,7 +302,21 @@ function ReplaceStep(stepParameters: ReplaceParameters, data: any): any {
 }
 
 function SpreadStep(stepParameters: SpreadParameters, data: any): any {
-  data.data = { ...data[stepParameters.first ?? "data"], ...data[stepParameters.second ?? "data"] }
+  data.data = { 
+    ...data[stepParameters.first ?? "data"],
+    ...data[stepParameters.second ?? "data"]
+  }
+  return data
+}
+
+async function IfStep(stepParameters: IfParameters, data: any): Promise<any> {
+  const condition = stepParameters.data ? data[stepParameters.data] : data.data
+  if (condition) {
+    return await stepsManager(deepCopy(stepParameters.steps), data)
+  }
+  else if (stepParameters.elseSteps) {
+    return await stepsManager(deepCopy(stepParameters.elseSteps), data)
+  }
   return data
 }
 

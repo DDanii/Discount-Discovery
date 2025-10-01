@@ -1,0 +1,131 @@
+steps:
+  - stepParameters:
+      method: CreateArray
+      name: headers
+  - stepParameters: 
+      method: Literal
+      data: https://tesco.hu
+      destination: imageUrlStart
+  - stepParameters: 
+      method: Literal
+      data: "-1"
+  - stepParameters: 
+      method: SetProp
+      destination: empty
+      destinationProp: price
+  - stepParameters: 
+      method: Literal
+      data: Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0
+  - stepParameters: 
+      method: SetProp
+      destination: header1
+      destinationProp: User-Agent
+  - stepParameters: 
+      method: PushToArray
+      array: headers
+      data: header1
+  - stepParameters: 
+      method: Literal
+      data: gzip, deflate, br, zstd
+  - stepParameters: 
+      method: SetProp
+      destination: header2
+      destinationProp: Accept-Encoding
+  - stepParameters: 
+      method: PushToArray
+      array: headers
+      data: header2
+  - stepParameters: 
+      method: Literal
+      data: https://tesco.hu/Ajax?apage=1&limit=1000&type=load-more-products&path=/akciok/akcios-termekek/&page_url=undefined
+  - stepParameters:
+      method: Fetch
+      headersSource: headers
+  - stepParameters: 
+      method: ParseJSON
+  - stepParameters: 
+      method: SetProp
+      sourceProp: products
+      destination: products
+  - stepParameters: 
+      method: ForEach
+      source: products
+      steps:
+        - stepParameters: 
+            method: SetProp
+            destination: data-save
+        - stepParameters: 
+            method: SetProp
+            sourceProp: id
+            destination: product
+            destinationProp: id
+        - stepParameters: 
+            method: SetProp
+            sourceProp: name
+            destination: product
+            destinationProp: name
+
+        - stepParameters: 
+            method: SetProp
+            sourceProp: data
+            destination: pdata
+        
+        - stepParameters: 
+            method: SetProp
+            source: pdata
+            sourceProp: new-price
+            destination: np
+        
+
+        - stepParameters: 
+            method: SetProp
+            sourceProp: data   
+        - stepParameters: 
+            method: SetProp
+            sourceProp: template
+        - stepParameters: 
+            method: SetProp
+            sourceProp: data
+        - stepParameters: 
+            method: SetProp
+            sourceProp: clubcard-price
+            destination: cp
+        - stepParameters: 
+            method: Spread
+            first: empty
+            second: np
+        - stepParameters: 
+            method: Spread
+            second: cp
+
+        - stepParameters: 
+            method: SetProp
+            sourceProp: price
+
+        - stepParameters: 
+            method: ParseJSON
+        - stepParameters: 
+            method: SetProp
+            destination: product
+            destinationProp: price
+
+        - stepParameters: 
+            method: SetProp
+            source: data-save
+        - stepParameters: 
+            method: SetProp
+            sourceProp: imageurl
+
+        - stepParameters: 
+            method: Concat
+            first: imageUrlStart
+        - stepParameters: 
+            method: SetProp
+            destination: product
+            destinationProp: image
+
+
+        - stepParameters: 
+            method: PushToArray
+            array: DDParsedProducts
+            data: product

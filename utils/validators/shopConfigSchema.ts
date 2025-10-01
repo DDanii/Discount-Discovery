@@ -4,11 +4,18 @@ import {
   type ShopConfig,
   type ParseStep,
   type ForEachParameters,
-  type ParallelProcessParameters,
+  type IfParameters,
   stepType,
 } from "./../types/shopConfig";
 
 export const stepTypeSchema = z.nativeEnum(stepType);
+
+export const argumentSchema = z.object({
+  argument: z.string(),
+  label: z.string(),
+  required: z.boolean().optional(),
+  defaultValue: z.string().optional(),
+});
 
 export const fetchParametersSchema = z.object({
   method: z.literal(stepType.Fetch),
@@ -41,7 +48,7 @@ export const createArrayParametersSchema = z.object({
 export const pushToArrayParametersSchema = z.object({
   method: z.literal(stepType.PushToArray),
   array: z.string(),
-  data: z.string(),
+  data: z.string().optional(),
 });
 
 export const parseHTMLParametersSchema = z.object({
@@ -100,6 +107,12 @@ export const spreadParametersSchema = z.object({
 
 export const shopConfigSchema: z.ZodSchema<ShopConfig> = z.lazy(() =>
   z.object({
+    autoCorrectYears: z.boolean().optional(),
+    name: z.string(),
+    cron: z.string().optional(),
+    timezone: z.string().optional(),
+    icon: z.string().optional(),
+    arguments: z.array(argumentSchema).optional(),
     steps: z.array(parseStepSchema),
   }),
 );
@@ -115,7 +128,6 @@ export const parseStepSchema: z.ZodSchema<ParseStep> = z.lazy(() =>
       createArrayParametersSchema,
       pushToArrayParametersSchema,
       parseHTMLParametersSchema,
-      parallelProcessParametersSchema,
       hTMLQuerySelectorParametersSchema,
       concatParametersSchema,
       toStringParametersSchema,
@@ -125,6 +137,7 @@ export const parseStepSchema: z.ZodSchema<ParseStep> = z.lazy(() =>
       splitParametersSchema,
       replaceParametersSchema,
       spreadParametersSchema,
+      ifParametersSchema,
     ]),
   }),
 );
@@ -138,10 +151,11 @@ export const forEachParametersSchema: z.ZodSchema<ForEachParameters> = z.lazy(
     }),
 );
 
-export const parallelProcessParametersSchema: z.ZodSchema<ParallelProcessParameters> =
-  z.lazy(() =>
-    z.object({
-      method: z.literal(stepType.ParallelProcess),
-      steps: z.array(parseStepSchema),
-    }),
-  );
+export const ifParametersSchema: z.ZodSchema<IfParameters> = z.lazy(() =>
+  z.object({
+    method: z.literal(stepType.If),
+    data: z.string().optional(),
+    steps: z.array(parseStepSchema),
+    elseSteps: z.array(parseStepSchema).optional(),
+  }),
+);

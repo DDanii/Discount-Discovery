@@ -61,6 +61,7 @@
         },
         "method": {
           "const": "Fetch",
+          "description": "Fetches the url in the data",
           "type": "string"
         }
       },
@@ -130,6 +131,36 @@
       ],
       "type": "object"
     },
+    "IfParameters": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "description": "Default value 'data'",
+          "type": "string"
+        },
+        "elseSteps": {
+          "items": {
+            "$ref": "#/definitions/ParseStep"
+          },
+          "type": "array"
+        },
+        "method": {
+          "const": "If",
+          "type": "string"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/definitions/ParseStep"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "method",
+        "steps"
+      ],
+      "type": "object"
+    },
     "LiteralParameters": {
       "additionalProperties": false,
       "properties": {
@@ -148,27 +179,6 @@
       "required": [
         "method",
         "data"
-      ],
-      "type": "object"
-    },
-    "ParallelProcessParameters": {
-      "additionalProperties": false,
-      "properties": {
-        "method": {
-          "const": "ParallelProcess",
-          "description": "Untested Uses deepCopy",
-          "type": "string"
-        },
-        "steps": {
-          "items": {
-            "$ref": "#/definitions/ParseStep"
-          },
-          "type": "array"
-        }
-      },
-      "required": [
-        "method",
-        "steps"
       ],
       "type": "object"
     },
@@ -229,9 +239,6 @@
               "$ref": "#/definitions/ParseHTMLParameters"
             },
             {
-              "$ref": "#/definitions/ParallelProcessParameters"
-            },
-            {
               "$ref": "#/definitions/HTMLQuerySelectorParameters"
             },
             {
@@ -257,6 +264,9 @@
             },
             {
               "$ref": "#/definitions/SpreadParameters"
+            },
+            {
+              "$ref": "#/definitions/IfParameters"
             }
           ]
         }
@@ -273,6 +283,7 @@
           "type": "string"
         },
         "data": {
+          "description": "Default value 'data'",
           "type": "string"
         },
         "method": {
@@ -283,8 +294,7 @@
       },
       "required": [
         "method",
-        "array",
-        "data"
+        "array"
       ],
       "type": "object"
     },
@@ -345,14 +355,41 @@
     "ShopConfig": {
       "additionalProperties": false,
       "properties": {
+        "arguments": {
+          "description": "Custom input from user to be used in steps",
+          "items": {
+            "$ref": "#/definitions/argument"
+          },
+          "type": "array"
+        },
+        "autoCorrectYears": {
+          "description": "If true, will automatically correct the year around the start of a new year. example if the date is 2025.12.23 and end date is 2025.1.5 -> 2026.1.5 Default value: false",
+          "type": "boolean"
+        },
+        "cron": {
+          "description": "Cron defined time when to run the steps Default 6 oclock in the morning",
+          "type": "string"
+        },
+        "icon": {
+          "description": "Shop icon url",
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
         "steps": {
           "items": {
             "$ref": "#/definitions/ParseStep"
           },
           "type": "array"
+        },
+        "timezone": {
+          "description": "Timezone for the cron job",
+          "type": "string"
         }
       },
       "required": [
+        "name",
         "steps"
       ],
       "type": "object"
@@ -405,6 +442,7 @@
         },
         "method": {
           "const": "Spread",
+          "description": "data = {...first, ...second}",
           "type": "string"
         },
         "second": {
@@ -429,6 +467,32 @@
         "method"
       ],
       "type": "object"
+    },
+    "argument": {
+      "additionalProperties": false,
+      "properties": {
+        "argument": {
+          "description": "Unique identifier determines the property the user value will be in",
+          "type": "string"
+        },
+        "defaultValue": {
+          "type": "string"
+        },
+        "label": {
+          "description": "Label to show the user at the input field",
+          "type": "string"
+        },
+        "required": {
+          "description": "If true, the user must provide a value",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "argument",
+        "label"
+      ],
+      "type": "object"
     }
   }
 }
+

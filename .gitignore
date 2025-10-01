@@ -23,7 +23,9 @@ logs
 .env.*
 !.env.example
 
-#testdata
-store
+#store
 
 fetch_cache
+/generated/prisma
+
+dev.db

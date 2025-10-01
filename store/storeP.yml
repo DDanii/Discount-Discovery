@@ -1,0 +1,103 @@
+name: Penny
+steps:
+  - stepParameters:
+      method: CreateArray
+      name: urls
+
+  - stepParameters:
+      method: Literal
+      data: "https://www.penny.hu/api/products?pageSize=500"
+      destination: url
+
+  - stepParameters:
+      method: PushToArray
+      array: urls
+      data: url
+
+  - stepParameters:
+      method: Literal
+      data: "https://www.penny.hu/api/products?pageSize=500&page=1"
+      destination: url
+
+  - stepParameters:
+      method: PushToArray
+      array: urls
+      data: url
+
+  - stepParameters:
+      method: ForEach
+      source: urls
+      steps:
+        - stepParameters:
+            method: Fetch
+
+        - stepParameters:
+            method: ParseJSON
+
+        - stepParameters:
+            method: SetProp
+            sourceProp: results
+            destination: results
+
+        - stepParameters:
+            method: ForEach
+            source: results
+            steps:
+              - stepParameters:
+                  method: SetProp
+                  sourceProp: images
+                  destination: tmp
+
+              - stepParameters:
+                  method: SetProp
+                  source: tmp
+                  sourceProp: 0
+                  destination: product
+                  destinationProp: image
+
+              - stepParameters:
+                  method: SetProp
+                  sourceProp: name
+                  destination: product
+                  destinationProp: name
+
+              - stepParameters:
+                  method: SetProp
+                  sourceProp: sku
+                  destination: product
+                  destinationProp: externalId
+              - stepParameters:
+                  method: SetProp
+                  sourceProp: price
+              - stepParameters: 
+                  method: SetProp
+                  sourceProp: validityStart
+                  destination: product
+                  destinationProp: startDate
+              - stepParameters: 
+                  method: SetProp
+                  sourceProp: validityEnd
+                  destination: product
+                  destinationProp: endDate
+              - stepParameters:
+                  method: SetProp
+                  sourceProp: regular
+              - stepParameters:
+                  method: SetProp
+                  sourceProp: value
+              - stepParameters:
+                  method: ToString
+              - stepParameters:
+                  method: Slice
+                  start: 0
+                  end: -2
+              - stepParameters: 
+                  method: ParseJSON
+              - stepParameters:
+                  method: SetProp
+                  destination: product
+                  destinationProp: price
+              - stepParameters:
+                  method: PushToArray
+                  array: DDParsedProducts
+                  data: product

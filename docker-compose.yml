@@ -1,0 +1,11 @@
+services:
+  discount-discovery:
+    image: DDanii/Discount-Discovery
+    ports:
+      - "3000:3000"
+    environment:
+      - "DATABASE_URL=file:/config/database.db"
+    volumes:
+      - type: bind
+        source: ../config
+        target: /config
