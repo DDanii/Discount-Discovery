@@ -1,61 +1,70 @@
-import prisma from "~/lib/prisma";
+import prisma, { CategoryPreference, Preference, Product, Shop } from "~/lib/prisma";
 import type ProductWithPreference from "~/utils/types/productWithPreference";
-import type listQuery from "~/utils/types/listQuery";
-
-const pageSize = 10;
+import { listVariables, pageSize, pageSlice } from "~/utils/utils";
 
 export default defineEventHandler(async (event) => {
+  const userId = 1
   const now = new Date()
   const prefs = (
-    await prisma.user.findUnique({
+    await prisma.product.findMany({
       where: {
-        id: 1,
+        endDate: {
+          gt: now
+        },
         AND: {
-          preferences: {
-            some: {
-              product: { 
-                endDate: { 
-                  gt: now 
-                },
-                AND: {
-                  startDate: {
-                    lt: now
-                  }
-                }
-              } 
-            }
+          startDate: {
+            lt: now
           }
         }
       },
       include: {
-        preferences: { include: { product: true } },
+        preferences: {
+          where: {
+            userId: userId
+          }
+        },
+        shop: true,
+        categoryModel: {
+          include: {
+            categoryPreferences: {
+              where: {
+                userId: userId
+              }
+            }
+          }
+        }
       },
     })
-  )?.preferences;
+  );
 
-  const noPrefs = (
-    await prisma.product.findMany({
-      where: { Preference: { none: { userId: 1 } }, AND: { endDate: { gt: now }, startDate: { lt: now } } },
-    })
-  ).map((p) => ({ ...p, preference: null })) as ProductWithPreference[];
+  const [pageNum, filterList] = listVariables(event)
+  const prods = prefs
+    .filter((p) => filterList.includes(listPreferenceValue(p)))
+    .map(p => mapToProductWithPreference(p))
+    .slice(...pageSlice(pageSize, pageNum))
 
-  let prods =
-    prefs?.map(
-      (p) => ({ ...p.product, preference: p.value }) as ProductWithPreference
-    ) ?? ([] as ProductWithPreference[]);
-  prods.push(...noPrefs);
-  const query = getQuery(event) as unknown as listQuery;
-  const pageNum = parseInt(query?.page as unknown as string) || 0;
-  const filterList = createFilterList(query);
-  prods = prods.filter((p) => filterList.includes(p.preference)); 
+  return { productList: prods };
 
-  return { productList: prods.slice(pageSize * pageNum, pageSize * pageNum + pageSize) };
+  function mapToProductWithPreference(product: databaseProduct): ProductWithPreference {
+    return {
+      ...product,
+      preference: product.preferences.first()?.value ?? null,
+      startDate: product.startDate.toDateString(),
+      endDate: product.endDate.toDateString()
+    }
+  }
+
+  function listPreferenceValue(p: databaseProduct): boolean | null {
+    const productPreference = p.preferences.first()?.value
+    const categoryPreference = p.categoryModel?.categoryPreferences.first()?.value
+    return productPreference ?? categoryPreference ?? null
+  }
+
+  type databaseProduct = Product & {
+    shop: Shop,
+    preferences: Preference[],
+    categoryModel: {
+      categoryPreferences: CategoryPreference[]
+    } | null
+  }
 });
-
-function createFilterList(query: listQuery): (boolean|null)[] {
-  const filterList= [];
-  if(query?.liked as unknown === "true") filterList.push(true);
-  if(query?.disliked as unknown === "true") filterList.push(false);
-  if(query?.neutral as unknown === "true") filterList.push(null);
-  return filterList;
-}

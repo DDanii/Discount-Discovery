@@ -6,7 +6,7 @@
       "additionalProperties": false,
       "properties": {
         "first": {
-          "description": "Default value 'data'",
+          "description": "Default value 'data' Compatible with doted path",
           "type": "string"
         },
         "method": {
@@ -14,7 +14,7 @@
           "type": "string"
         },
         "second": {
-          "description": "Default value 'data'",
+          "description": "Default value 'data' Compatible with doted path",
           "type": "string"
         }
       },
@@ -168,7 +168,7 @@
           "type": "string"
         },
         "destination": {
-          "description": "Default value 'data'",
+          "description": "Default value 'data' Compatible with doted path",
           "type": "string"
         },
         "method": {
@@ -283,7 +283,7 @@
           "type": "string"
         },
         "data": {
-          "description": "Default value 'data'",
+          "description": "Default value 'data' Compatible with doted path",
           "type": "string"
         },
         "method": {
@@ -326,10 +326,7 @@
       "additionalProperties": false,
       "properties": {
         "destination": {
-          "description": "Default value 'data'",
-          "type": "string"
-        },
-        "destinationProp": {
+          "description": "Default value 'data' Compatible with doted path",
           "type": "string"
         },
         "method": {
@@ -337,14 +334,8 @@
           "type": "string"
         },
         "source": {
-          "description": "Default value 'data'",
+          "description": "Default value 'data' Compatible with doted path",
           "type": "string"
-        },
-        "sourceProp": {
-          "type": [
-            "string",
-            "number"
-          ]
         }
       },
       "required": [
@@ -437,7 +428,7 @@
       "additionalProperties": false,
       "properties": {
         "first": {
-          "description": "Default value 'data'",
+          "description": "Default value 'data' Compatible with doted path",
           "type": "string"
         },
         "method": {
@@ -446,7 +437,7 @@
           "type": "string"
         },
         "second": {
-          "description": "Default value 'data'",
+          "description": "Default value 'data' Compatible with doted path",
           "type": "string"
         }
       },

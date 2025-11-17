@@ -1,5 +1,13 @@
 {
     "yaml.schemas": {
         "shopConfigSchema.json": "*store/*.yml"
+    },
+    "tailwindCSS.includeLanguages": {
+        "html": "html",
+        "javascript": "javascript",
+        "css": "css"
+    },
+    "editor.quickSuggestions": {
+        "strings": true
     }
 }

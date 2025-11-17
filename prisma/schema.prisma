@@ -12,94 +12,119 @@ datasource db {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  name     String @unique
-  password String
-  defaultFilterLiked Boolean @default(true)
+  id                    Int     @id @default(autoincrement())
+  name                  String  @unique
+  password              String
+  defaultFilterLiked    Boolean @default(true)
   defaultFilterDisliked Boolean @default(true)
-  defaultFilterNeutral Boolean @default(true)
+  defaultFilterNeutral  Boolean @default(true)
 
-  preferences Preference[]
+  preferences  Preference[]
   ShopSettings ShopSettings[]
+
+  categoryPreferences CategoryPreference[]
 }
 
 model ShopSettings {
-  id        Int    @id @default(autoincrement())
-  user      User   @relation(fields: [userId], references: [id])
-  userId    Int
-  shop      Shop   @relation(fields: [shopId], references: [id])
-  shopId    Int
-  enabled   Boolean @default(true)
+  id      Int     @id @default(autoincrement())
+  user    User    @relation(fields: [userId], references: [id])
+  userId  Int
+  shop    Shop    @relation(fields: [shopId], references: [id])
+  shopId  Int
+  enabled Boolean @default(true)
 
   ArgumentSettings ArgumentSettings[]
+
   @@unique([userId, shopId])
 }
 
 model ArgumentSettings {
-  id       Int    @id @default(autoincrement())
-  shopArgument ShopArguments @relation(fields: [shopArgumentId], references: [id])
+  id             Int           @id @default(autoincrement())
+  shopArgument   ShopArguments @relation(fields: [shopArgumentId], references: [id])
   shopArgumentId Int
-  shopSetting ShopSettings @relation(fields: [shopSettingId], references: [id])
-  shopSettingId Int
-  value    String
+  shopSetting    ShopSettings  @relation(fields: [shopSettingId], references: [id])
+  shopSettingId  Int
+  value          String
 
   @@unique([shopArgumentId, shopSettingId])
 }
 
 model ShopArguments {
-  id        Int    @id @default(autoincrement())
-  shop      Shop @relation(fields: [shopId], references: [id])
-  shopId    Int
-  argument  String
-  label     String
-  required  Boolean @default(false)
+  id           Int     @id @default(autoincrement())
+  shop         Shop    @relation(fields: [shopId], references: [id])
+  shopId       Int
+  argument     String
+  label        String
+  required     Boolean @default(false)
   defaultValue String?
 
   ArgumentSettings ArgumentSettings[]
+
   @@unique([shopId, argument])
 }
 
 model Preference {
-  id        Int    @id @default(autoincrement())
-  user      User   @relation(fields: [userId], references: [id])
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
   userId    Int
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
   productId Int
   value     Boolean?
 
   @@unique([userId, productId])
+  @@map("Preference")
 }
 
 model Shop {
-  id    Int    @id @default(autoincrement())
-  source String @unique
-  name  String
-  icon  String?
-  country String?
+  id          Int       @id @default(autoincrement())
+  source      String    @unique
+  name        String
+  icon        String?
+  country     String?
   lastUpdated DateTime?
 
-  Product Product[]
-  ShopSettings ShopSettings[]
-  ShopArguments ShopArguments[]
+  products      Product[]
+  sopSettings  ShopSettings[]
+  shopArguments ShopArguments[]
 }
 
 model Product {
-  id         Int     @id @default(autoincrement())
-  externalId  String
-  shop       Shop    @relation(fields: [shopId], references: [id])
-  shopId     Int
-  name       String?
-  image      String?
-  price      Float?
-  startDate  DateTime
-  endDate    DateTime
-  url        String?
-  pricePerUnit Float?
-  unit       String?
-  description String?
-  warning    String?
-  category   String?
+  id            Int       @id @default(autoincrement())
+  externalId    String
+  shop          Shop      @relation(fields: [shopId], references: [id])
+  shopId        Int
+  name          String?
+  image         String?
+  price         Float?
+  startDate     DateTime
+  endDate       DateTime
+  url           String?
+  pricePerUnit  Float?
+  unit          String?
+  description   String?
+  warning       String?
+  categoryModel Category? @relation(fields: [category], references: [name])
+  category      String?
 
-  Preference Preference[]
+  preferences Preference[]
+
   @@unique([shopId, externalId])
+}
+
+model Category {
+  name String @id
+
+  products            Product[]
+  categoryPreferences CategoryPreference[]
+}
+
+model CategoryPreference {
+  id            Int      @id @default(autoincrement())
+  categoryModel Category @relation(fields: [category], references: [name])
+  category      String
+  value         Boolean?
+  user          User     @relation(fields: [userId], references: [id])
+  userId        Int
+
+  @@unique([userId, category])
 }

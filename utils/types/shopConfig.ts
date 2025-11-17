@@ -85,6 +85,7 @@ export interface LiteralParameters {
     data: string
     /**
      * Default value 'data'
+     * Compatible with doted path
      */
     destination?: string
 }
@@ -93,14 +94,14 @@ export interface SetPropParameters {
     method: stepType.SetProp
     /**
      * Default value 'data'
+     * Compatible with doted path
      */
     source?: string
-    sourceProp?: string | number
     /**
      * Default value 'data'
+     * Compatible with doted path
      */
     destination?: string
-    destinationProp?: string
 }
 
 export interface ParseJSONParameters {
@@ -126,6 +127,7 @@ export interface PushToArrayParameters {
     array: string
         /**
      * Default value 'data'
+     * Compatible with doted path
      */
     data?: string
 }
@@ -147,10 +149,12 @@ export interface ConcatParameters {
     method: stepType.Concat
     /**
      * Default value 'data'
+     * Compatible with doted path
      */
     first?: string
     /**
      * Default value 'data'
+     * Compatible with doted path
      */
     second?: string
 }
@@ -195,10 +199,12 @@ export interface SpreadParameters {
     method: stepType.Spread
     /**
      * Default value 'data'
+     * Compatible with doted path
      */
     first?: string
     /**
      * Default value 'data'
+     * Compatible with doted path
      */
     second?: string
 }

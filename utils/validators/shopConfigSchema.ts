@@ -31,9 +31,7 @@ export const literalParametersSchema = z.object({
 export const setPropParametersSchema = z.object({
   method: z.literal(stepType.SetProp),
   source: z.string().optional(),
-  sourceProp: z.union([z.string(), z.number()]).optional(),
   destination: z.string().optional(),
-  destinationProp: z.string().optional(),
 });
 
 export const parseJSONParametersSchema = z.object({

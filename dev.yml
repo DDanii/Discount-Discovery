@@ -1,0 +1,11 @@
+services:
+  discount-discovery:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - "DATABASE_URL=file:/config/dev.db"
+    volumes:
+      - type: bind
+        source: ./prisma/dev.db
+        target: /config/dev.db

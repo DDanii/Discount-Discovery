@@ -14,11 +14,12 @@
     "gen-schema": "ts-json-schema-generator --path 'utils/types/shopConfig.ts' --type 'ShopConfig' > shopConfigSchema.json",
     "gen-prisma": "prisma generate",
     "gen": "npm run gen-zod && npm run gen-schema && npm run gen-prisma",
-    "migrate-prisma": "prisma migrate deploy"
+    "migrate-create": "prisma migrate dev",
+    "migrate-prisma": "prisma migrate deploy",
+    "docker": "docker build . && docker compose -f dev.yml up"
   },
   "dependencies": {
     "@nuxt/eslint": "^0.7.4",
-    "@nuxtjs/tailwindcss": "^6.13.1",
     "@prisma/client": "^6.16.2",
     "cron": "^4.3.3",
     "eslint": "^9.35.0",
@@ -31,6 +32,7 @@
     "yaml": "^2.7.0"
   },
   "devDependencies": {
+    "@nuxtjs/tailwindcss": "^6.14.0",
     "@types/node": "^24.3.1",
     "ts-json-schema-generator": "^2.3.0",
     "ts-to-zod": "^3.15.0",

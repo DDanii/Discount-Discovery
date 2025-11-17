@@ -1,13 +1,11 @@
-import type listQuery from "~/utils/types/listQuery";
+import type { listQuery } from "~/utils/types/listQuery";
+import { defaultListQuery } from "~/utils/types/listQuery";
 
-export const useListQuery = () => 
-    useState<listQuery>('listQuery', () => ({
-        liked: true,
-        neutral: true, 
-        disliked: true, 
-        page: 0, 
-        counter: 0
-    }))
+export const useListQuery = () =>
+    useState<listQuery>('listQuery', () => defaultListQuery)
 
-export const useSideBarOpen = () => 
+export const useCategoryListQuery = () =>
+    useState<listQuery>('categoryListQuery', () => defaultListQuery)
+
+export const useSideBarOpen = () =>
     useState<boolean>('sideBarOpen', () => false)

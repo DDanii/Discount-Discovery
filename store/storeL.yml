@@ -155,7 +155,7 @@ steps:
             method: ParseJSON
         - stepParameters: 
             method: SetProp
-            sourceProp: items
+            source: data.items
             destination: items
         - stepParameters: 
             method: If
@@ -167,25 +167,16 @@ steps:
                   steps:
                       - stepParameters: 
                           method: SetProp
-                          sourceProp: code
-                          destination: product
-                          destinationProp: externalId
+                          source: data.code
+                          destination: product.externalId
                       - stepParameters: 
                           method: SetProp
-                          sourceProp: label
-                          destination: product
-                          destinationProp: name
+                          source: data.label
+                          destination: product.name
                       - stepParameters: 
                           method: SetProp
-                          sourceProp: gridbox
-                      - stepParameters: 
-                          method: SetProp
-                          sourceProp: data
-                      - stepParameters: 
-                          method: SetProp
-                          sourceProp: image
-                          destination: product
-                          destinationProp: image
+                          source: data.gridbox.data.image
+                          destination: product.image
                       - stepParameters: 
                           method: SetProp
                           destination: tmp
@@ -193,37 +184,27 @@ steps:
                           method: DeepCopy
                       - stepParameters: 
                           method: SetProp
-                          sourceProp: price
+                          source: data.gridbox.data.price.price
+                          destination: product.price
+                      - stepParameters:
+                          method: SetProp
+                          source: data.gridbox.data.keyfacts.analyticsCategory
+                          destination: product.category
                       - stepParameters: 
                           method: SetProp
-                          sourceProp: price
-                          destination: product
-                          destinationProp: price
-                      - stepParameters: 
-                          method: SetProp
-                          source: tmp
-                          sourceProp: stockAvailability
+                          source: data.gridbox.data.stockAvailability
                       - stepParameters: 
                           method: If
                           steps:
                           - stepParameters: 
                               method: SetProp
-                              sourceProp: badgeInfo
-                          - stepParameters: 
-                              method: SetProp
-                              sourceProp: badges
-                          - stepParameters: 
-                              method: SetProp
-                              sourceProp: 0
-                          - stepParameters: 
-                              method: SetProp
-                              sourceProp: text
+                              source: badgeInfo.badges.0.text
                           - stepParameters: 
                               method: Split
                               separator: ": "
                           - stepParameters: 
                               method: SetProp
-                              sourceProp: 1
+                              source: data.1
                           - stepParameters: 
                               method: If
                               steps:
@@ -235,7 +216,7 @@ steps:
                                       separator: " - "
                                   - stepParameters: 
                                       method: SetProp
-                                      sourceProp: 1
+                                      source: data.1
                                   - stepParameters: 
                                       method: If
                                       steps:
@@ -244,8 +225,7 @@ steps:
                                               first: currentYear
                                           - stepParameters: 
                                               method: SetProp
-                                              destination: product
-                                              destinationProp: endDate
+                                              destination: product.endDate
                                           - stepParameters: 
                                               method: SetProp
                                               source: dateTmp
@@ -253,31 +233,17 @@ steps:
                                               method: Split
                                               separator: " - "
                                           - stepParameters: 
-                                              method: SetProp
-                                              sourceProp: 0
-                                          - stepParameters: 
                                               method: Concat
                                               first: currentYear
+                                              second: data.0
                                           - stepParameters: 
                                               method: SetProp
-                                              destination: product
-                                              destinationProp: startDate
+                                              destination: product.startDate
                                       elseSteps:
                                           - stepParameters: 
                                               method: SetProp
-                                              destination: dateTmp
-                                          - stepParameters: 
-                                              method: Concat
-                                              first: currentYear
-                                          - stepParameters: 
-                                              method: SetProp
-                                              destination: product
-                                              destinationProp: startDate
-                                          - stepParameters: 
-                                              method: SetProp
                                               source: empty
-                                              destination: product
-                                              destinationProp: startDate
+                                              destination: product.startDate
                           - stepParameters: 
                               method: PushToArray
                               array: DDParsedProducts

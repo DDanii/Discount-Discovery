@@ -1,3 +1,25 @@
+#await fetch("https://api.prod.retail.tesco.com/marketing/leaflets-be/graphql", {
+#     "credentials": "omit",
+#     "headers": {
+#         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:144.0) Gecko/20100101 Firefox/144.0",
+#         "Accept": "*/*",
+#         "Accept-Language": "en-US,en;q=0.5",
+#         "content-type": "application/json",
+#         "traceparent": "00-33473779f08581a280d83ee5454f5cb8-ba7022d3588c05af-01",
+#         "Sec-Fetch-Dest": "empty",
+#         "Sec-Fetch-Mode": "cors",
+#         "Sec-Fetch-Site": "cross-site",
+#         "Priority": "u=4",
+#         "Pragma": "no-cache",
+#         "Cache-Control": "no-cache"
+#     },
+#     "referrer": "https://www.tesco.hu/",
+#     "body": "{\"operationName\":\"promotions\",\"variables\":{\"country\":\"hu\",\"today\":\"2025-11-12T19:39:00.000Z\",\"skip\":12,\"take\":12,\"sort\":{\"name\":\"ASC\"},\"saving\":{\"min\":0,\"max\":100},\"flags\":{},\"storeType\":null,\"categoryId\":null},\"query\":\"query promotions($country: CountryCode!, $today: DateTime!, $categoryId: Int, $storeId: String, $saving: SavingRange, $flags: PromoFlags, $sort: PromotionPeriodSortParameters, $take: Int, $skip: Int, $storeType: EStoreType) {\\n  promotions(\\n    options: {country: $country, today: $today, storeId: $storeId, saving: $saving, flags: $flags, sort: $sort, skip: $skip, take: $take, storeType: $storeType, categoryId: $categoryId}\\n  ) {\\n    items {\\n      id\\n      promoOfferName\\n      promoName\\n      periodName\\n      isOverriddenPromoName\\n      country\\n      displayedProductName\\n      displayedDescription\\n      normalRetailPrice\\n      normalNewPrice\\n      ccPrice\\n      ccFrom\\n      ccTo\\n      promoStart\\n      promoEnd\\n      visibilityStart\\n      visibilityEnd\\n      saving\\n      rewardValue\\n      pngUrl\\n      promoMechanicsName\\n      isInGhs\\n      addToBasketURL\\n      availableInHm\\n      availableInSm\\n      availableInEx\\n      x\\n      y\\n      multisaveOnePiecePrice\\n      treshold\\n      listIdForEhp\\n      posComm\\n      nationalFlag\\n      showInfoBox\\n      ccMemberPromo\\n      thresholdType\\n      ccSaving\\n      promoOfferNameOverride\\n      linksavePackagePrice\\n      loyaltyRatio\\n      bestSeller\\n      bombDiscounts {\\n        id\\n        index\\n        price\\n        unitPrice\\n        saving\\n        start\\n        end\\n        __typename\\n      }\\n      promotionUnitType {\\n        sid\\n        name\\n        hideCurrency\\n        hideMeasure\\n        __typename\\n      }\\n      __typename\\n    }\\n    totalItems\\n    __typename\\n  }\\n}\"}",
+#     "method": "POST",
+#     "mode": "cors"
+# });
+
+
 steps:
   - stepParameters:
       method: CreateArray

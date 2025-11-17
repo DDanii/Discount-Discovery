@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { parse as HTMLParse } from "node-html-parser";
 import { readdirSync, readFileSync } from "fs";
-import { type ParseStep, stepType, type SetPropParameters,
-  type ForEachParameters, type PushToArrayParameters, 
+import {
+  type ParseStep, stepType, type SetPropParameters,
+  type ForEachParameters, type PushToArrayParameters,
   type ConcatParameters, type SliceParameters, type SplitParameters,
   type ReplaceParameters, type FetchParameters, type SpreadParameters,
-  type HTMLQuerySelectorParameters, type IfParameters, 
-  type ShopConfig} from "../types/shopConfig";
+  type HTMLQuerySelectorParameters, type IfParameters,
+  type ShopConfig
+} from "../types/shopConfig";
 import { parse as YamlParse } from "yaml";
 import { shopConfigSchema } from "../validators/shopConfigSchema";
 import prisma, { type Product, type Shop } from "../../lib/prisma";
@@ -22,7 +24,7 @@ let tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
 
 export class ProductsService {
 
-  public async createUser(){
+  public async createUser() {
     await prisma.user.upsert({
       where: { id: 1 },
       create: { id: 1, name: "Admin", password: "dummy" },
@@ -39,7 +41,8 @@ export class ProductsService {
   }
 }
 
-async function handleConfigFile(fname: string){
+async function handleConfigFile(fname: string) {
+  console.log(`Handling file: ${fname}`)
 
   try {
     const file = readFileSync(`store/${fname}`, 'utf8')
@@ -50,22 +53,24 @@ async function handleConfigFile(fname: string){
       console.log("Parse error")
       console.log(fname)
       console.log(config.error)
-      return 
+      return
     }
 
     const shop = await prisma.shop.upsert({
-      where: {source: fname},
-      create: {source: fname, name: config.data.name},
-      update: {source: fname, name: config.data.name}
+      where: { source: fname },
+      create: { source: fname, name: config.data.name },
+      update: { source: fname, name: config.data.name }
     })
-    
+
     const job = new CronJob(config.data.cron ?? defaultCron, async () => {
-      await gatherProducts(config.data, shop)}, null, true //TODO handle timezone
+      await gatherProducts(config.data, shop)
+    }, null, true //TODO handle timezone
     )
     const dates = job.nextDates(2)
-    
-    const diff = (dates[1]?.toMillis() ?? cacheDateDifference) - (dates[0]?.toMillis() ?? 0)
-    if (!shop.lastUpdated || (new Date().getTime() - shop.lastUpdated.getTime()) > diff) {
+
+    const cronDiff = (dates[1]?.toMillis() ?? cacheDateDifference) - (dates[0]?.toMillis() ?? 0)
+
+    if (!shop.lastUpdated || ((dates[0]?.toMillis() ?? 0) - shop.lastUpdated.getTime()) > cronDiff) {
       await gatherProducts(config.data, shop);
     }
 
@@ -78,21 +83,39 @@ async function handleConfigFile(fname: string){
   }
 }
 
-async function gatherProducts(config: ShopConfig , shop: Shop) {
+async function gatherProducts(config: ShopConfig, shop: Shop) {
   let data = { DDParsedProducts: [], currentYear: year.toString() };
   year = (new Date()).getFullYear()
   month = (new Date()).getMonth()
   tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
   data = await stepsManager(config.steps, data)
-  
+
+  await gatherCategories(data.DDParsedProducts);
   data.DDParsedProducts.forEach(async (product: Product) => {
     await handleProduct(product, config, shop);
   });
-  
+
   await prisma.shop.update({
     where: { id: shop.id },
     data: { lastUpdated: new Date() }
   })
+}
+
+async function gatherCategories(products: Product[]) {
+  products.map(p => p.category ?? "")
+    .filter(c => c !== "")
+    .filter(onlyUnique)
+    .forEach(async category => {
+      await prisma.category.upsert({
+        where: { name: category },
+        create: { name: category },
+        update: {}
+      })
+    });
+}
+
+function onlyUnique(value: string, index: number, array: string[]) {
+  return array.indexOf(value) === index;
 }
 
 async function handleProduct(product: Product, config: ShopConfig, shop: Shop) {
@@ -101,6 +124,7 @@ async function handleProduct(product: Product, config: ShopConfig, shop: Shop) {
   if (config.autoCorrectYears) {
     correctYears(product);
   }
+  
   await prisma.product.upsert({
     where: { shopId_externalId: { externalId: product.externalId, shopId: shop.id } },
     update: { ...product, shopId: shop.id },
@@ -109,15 +133,13 @@ async function handleProduct(product: Product, config: ShopConfig, shop: Shop) {
 }
 
 function correctYears(product: Product): Product {
-  if (month == 11)
-  {
+  if (month == 11) {
     if (product.startDate.getMonth() == 0)
       product.startDate.setFullYear(year + 1)
     if (product.endDate.getMonth() == 0)
       product.endDate.setFullYear(year + 1)
   }
-  else if (month == 0)
-  {
+  else if (month == 0) {
     if (product.startDate.getMonth() == 11)
       product.startDate.setFullYear(year - 1)
     if (product.endDate.getMonth() == 11)
@@ -143,7 +165,7 @@ async function stepResolver(step: ParseStep, data: any): Promise<any> {
   switch (step.stepParameters.method) {
 
     case stepType.Literal:
-      data[step.stepParameters.destination ?? "data"] = step.stepParameters.data
+      data = setValue(data, step.stepParameters.destination ?? "data", step.stepParameters.data)
       break
     case stepType.Fetch:
       data = await FetchStep(step.stepParameters, data)
@@ -212,7 +234,10 @@ async function FetchStep(parameters: FetchParameters, data: any): Promise<any> {
       }
     }
   }
-  data.data = await (await fetch(request)).text()
+  const response = await fetch(request);
+  if (!response.ok)
+    console.log(`${response.url}: ${response.status}`)
+  data.data = await (response).text()
   return data;
 }
 
@@ -222,12 +247,12 @@ function SliceStep(parameters: SliceParameters, data: any): any {
 }
 
 function ConcatStep(step: ConcatParameters, data: any): any {
-  data.data = (data[step.first ?? "data"] ?? "").concat(data[step.second ?? "data"] ?? "");
+  data.data = (getValue(data, step.first ?? "data") ?? "").concat(getValue(data, step.second ?? "data") ?? "");
   return data
 }
 
 function pushToArray(parameters: PushToArrayParameters, data: any): any {
-  data[parameters.array].push(deepCopy(data[parameters.data ?? "data"]))
+  data[parameters.array].push(deepCopy(getValue(data, parameters.data ?? "data")))
   return data
 }
 
@@ -246,7 +271,7 @@ async function forEachStep(stepParameters: ForEachParameters, data: any): Promis
         continue
       }
     }
-  }catch(e) {
+  } catch (e) {
     console.log("foreach outer catch")
     console.log(e)
     console.log(source)
@@ -259,21 +284,8 @@ function deepCopy(data: any): any {
 }
 
 function setProp(stepParameters: SetPropParameters, data: any): any {
-  let toSet = data[stepParameters.source ?? "data"]
-  if (stepParameters.sourceProp != undefined && toSet) {
-    toSet = toSet[stepParameters.sourceProp]
-  }
-  const destination = stepParameters.destination ?? "data";
-  if (!data[destination]) {
-    data[destination] = {}
-  }
-  if (stepParameters.destinationProp) {
-    data[destination][stepParameters.destinationProp] = toSet
-  }
-  else {
-    data[destination] = toSet
-  }
-  return data
+  let toSet = getValue(data, stepParameters.source ?? "data")
+  return setValue(data, stepParameters.destination ?? "data", toSet)
 }
 
 function HTMLQuerySelector(stepParameters: HTMLQuerySelectorParameters, data: any): any {
@@ -302,9 +314,9 @@ function ReplaceStep(stepParameters: ReplaceParameters, data: any): any {
 }
 
 function SpreadStep(stepParameters: SpreadParameters, data: any): any {
-  data.data = { 
-    ...data[stepParameters.first ?? "data"],
-    ...data[stepParameters.second ?? "data"]
+  data.data = {
+    ...getValue(data, stepParameters.first ?? "data"),
+    ...getValue(data, stepParameters.second ?? "data")
   }
   return data
 }
@@ -319,4 +331,26 @@ async function IfStep(stepParameters: IfParameters, data: any): Promise<any> {
   }
   return data
 }
+
+function getValue(obj: any, path: string): any {
+  return path.split('.').reduce((o, key) => o?.[key], obj);
+}
+
+function setValue(obj: any, path: string, value: any): any {
+  const keys = path.split(".");
+  const last = keys.pop() as string;
+
+  let curr = obj;
+  for (const key of keys) {
+    if (typeof curr[key] !== "object" || curr[key] === null) {
+      curr[key] = {};
+    }
+    curr = curr[key];
+  }
+
+  curr[last] = value;
+
+  return obj
+}
+
 
