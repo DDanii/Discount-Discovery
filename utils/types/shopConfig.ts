@@ -77,6 +77,10 @@ export interface FetchParameters {
      * Fetches the url in the data
      */
     method: stepType.Fetch
+    /**
+     * Expects the source for an array with key value pairs
+     * example data: data.Accept = json
+     */
     headersSource?: string
 }
 

@@ -57,6 +57,7 @@
       "additionalProperties": false,
       "properties": {
         "headersSource": {
+          "description": "Expects the source for an array with key value pairs example data: data.Accept = json",
           "type": "string"
         },
         "method": {

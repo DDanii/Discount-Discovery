@@ -198,7 +198,7 @@ steps:
                           steps:
                           - stepParameters: 
                               method: SetProp
-                              source: badgeInfo.badges.0.text
+                              source: data.badgeInfo.badges.0.text
                           - stepParameters: 
                               method: Split
                               separator: ": "
@@ -211,6 +211,8 @@ steps:
                                   - stepParameters: 
                                       method: SetProp
                                       destination: dateTmp
+                                  - stepParameters: 
+                                      method: DeepCopy
                                   - stepParameters: 
                                       method: Split
                                       separator: " - "

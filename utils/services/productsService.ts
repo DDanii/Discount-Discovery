@@ -38,6 +38,7 @@ export class ProductsService {
       if (fname.endsWith(".yml"))
         await handleConfigFile(fname)
     }
+    console.log("All files done")
   }
 }
 
@@ -90,10 +91,8 @@ async function gatherProducts(config: ShopConfig, shop: Shop) {
   tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
   data = await stepsManager(config.steps, data)
 
-  await gatherCategories(data.DDParsedProducts);
-  data.DDParsedProducts.forEach(async (product: Product) => {
-    await handleProduct(product, config, shop);
-  });
+  await gatherCategories(data.DDParsedProducts)
+  await handleProducts(data.DDParsedProducts, config, shop)
 
   await prisma.shop.update({
     where: { id: shop.id },
@@ -102,34 +101,42 @@ async function gatherProducts(config: ShopConfig, shop: Shop) {
 }
 
 async function gatherCategories(products: Product[]) {
-  products.map(p => p.category ?? "")
+  const filtered = products.map(p => p.category ?? "")
     .filter(c => c !== "")
     .filter(onlyUnique)
-    .forEach(async category => {
-      await prisma.category.upsert({
-        where: { name: category },
-        create: { name: category },
-        update: {}
-      })
+
+  await Promise.all(filtered.map(category => {
+    return prisma.category.upsert({
+      where: { name: category },
+      create: { name: category },
+      update: {}
     });
+  }))
 }
 
 function onlyUnique(value: string, index: number, array: string[]) {
   return array.indexOf(value) === index;
 }
 
-async function handleProduct(product: Product, config: ShopConfig, shop: Shop) {
+async function handleProducts(products: Product[], config: ShopConfig, shop: Shop) {
+  products = products.map(p => mapDates(p, config))
+
+  await Promise.all(products.map(product => {
+    return prisma.product.upsert({
+      where: { shopId_externalId: { externalId: product.externalId, shopId: shop.id } },
+      update: { ...product, shopId: shop.id },
+      create: { ...product, shopId: shop.id }
+    });
+  }))
+}
+
+function mapDates(product: Product, config: ShopConfig): Product {
   product.startDate = product.startDate ? new Date(product.startDate) : new Date();
   product.endDate = product.endDate ? new Date(product.endDate) : tomorrow;
   if (config.autoCorrectYears) {
-    correctYears(product);
+    product = correctYears(product);
   }
-  
-  await prisma.product.upsert({
-    where: { shopId_externalId: { externalId: product.externalId, shopId: shop.id } },
-    update: { ...product, shopId: shop.id },
-    create: { ...product, shopId: shop.id }
-  });
+  return product
 }
 
 function correctYears(product: Product): Product {
@@ -223,6 +230,9 @@ async function stepResolver(step: ParseStep, data: any): Promise<any> {
 }
 
 async function FetchStep(parameters: FetchParameters, data: any): Promise<any> {
+  // data.data = readFileSync(`test.data`, 'utf8')
+  // return data
+
   console.log("fetching")
   const request = new Request(data.data)
   if (parameters.headersSource) {
