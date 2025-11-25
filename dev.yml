@@ -7,5 +7,5 @@ services:
       - "DATABASE_URL=file:/config/dev.db"
     volumes:
       - type: bind
-        source: ./prisma/dev.db
-        target: /config/dev.db
+        source: ./prisma/
+        target: /config/

@@ -16,7 +16,7 @@
     "gen": "npm run gen-zod && npm run gen-schema && npm run gen-prisma",
     "migrate-create": "prisma migrate dev",
     "migrate-prisma": "prisma migrate deploy",
-    "docker": "docker build . && docker compose -f dev.yml up"
+    "docker": "docker compose -f dev.yml build && docker compose -f dev.yml up"
   },
   "dependencies": {
     "@nuxt/eslint": "^0.7.4",
