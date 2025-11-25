@@ -105,13 +105,13 @@ async function gatherCategories(products: Product[]) {
     .filter(c => c !== "")
     .filter(onlyUnique)
 
-  await Promise.all(filtered.map(category => {
-    return prisma.category.upsert({
+  for (const category of filtered){
+    await prisma.category.upsert({
       where: { name: category },
       create: { name: category },
       update: {}
     });
-  }))
+  }
 }
 
 function onlyUnique(value: string, index: number, array: string[]) {
@@ -119,15 +119,15 @@ function onlyUnique(value: string, index: number, array: string[]) {
 }
 
 async function handleProducts(products: Product[], config: ShopConfig, shop: Shop) {
-  products = products.map(p => mapDates(p, config))
+  const mappedProducts = products.map(p => mapDates(p, config))
 
-  await Promise.all(products.map(product => {
-    return prisma.product.upsert({
+  for (const product of mappedProducts){
+    await prisma.product.upsert({
       where: { shopId_externalId: { externalId: product.externalId, shopId: shop.id } },
       update: { ...product, shopId: shop.id },
       create: { ...product, shopId: shop.id }
     });
-  }))
+  }
 }
 
 function mapDates(product: Product, config: ShopConfig): Product {

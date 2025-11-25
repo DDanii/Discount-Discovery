@@ -2,7 +2,11 @@ import { PrismaClient } from '_db'
 export * from '_db'
 
 const prismaClientSingleton = () => {
-  return new PrismaClient()
+  return new PrismaClient({
+    transactionOptions: {
+      timeout: 30000
+    }
+  })
 }
 
 declare const globalThis: {
