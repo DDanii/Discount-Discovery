@@ -27,12 +27,12 @@ ENV PORT=$PORT
 ENV NODE_ENV=production
 ENV DATABASE_URL="file:/config/database.db"
 
-RUN npm install prisma
 
 COPY --from=build /src/.output /src/.output
 COPY --from=build /src/prisma /src/prisma
-COPY --from=build /src/node_modules/_db /src/node_modules/_db
 COPY --from=build /src/store /src/store
+RUN npm install prisma
+COPY --from=build /src/node_modules/_db /src/node_modules/_db
 
 EXPOSE $PORT
 
