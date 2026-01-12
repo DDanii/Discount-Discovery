@@ -188,7 +188,7 @@ steps:
                           destination: product.price
                       - stepParameters:
                           method: SetProp
-                          source: data.gridbox.data.keyfacts.analyticsCategory
+                          source: data.gridbox.meta.campaignPaths.0.0.name
                           destination: product.category
                       - stepParameters: 
                           method: SetProp

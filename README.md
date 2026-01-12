@@ -38,9 +38,9 @@ docker run -d --name discount-discovery -p 3000:3000 ddanii/discount-discovery -
 
 ## Roadmap
 
-[]countries
-[]product details with popup 
-[]past, future and more product sorting
-[]shop sources from settings
-[]user management 
+- [ ] countries
+- [x] product details with popup 
+- [ ] past, future and more product sorting
+- [ ] shop sources from settings
+- [ ] user management 
 
