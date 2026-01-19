@@ -2,7 +2,7 @@
 import { parse as HTMLParse } from "node-html-parser";
 import { readdirSync, readFileSync } from "fs";
 import {
-  type ParseStep, stepType, type SetPropParameters,
+  type ParseStep, StepType, type SetPropParameters,
   type ForEachParameters, type PushToArrayParameters,
   type ConcatParameters, type SliceParameters, type SplitParameters,
   type ReplaceParameters, type FetchParameters, type SpreadParameters,
@@ -171,58 +171,58 @@ async function stepsManager(steps: ParseStep[], data: any): Promise<any> {
 async function stepResolver(step: ParseStep, data: any): Promise<any> {
   switch (step.stepParameters.method) {
 
-    case stepType.Literal:
+    case StepType.Literal:
       data = setValue(data, step.stepParameters.destination ?? "data", step.stepParameters.data)
       break
-    case stepType.Fetch:
+    case StepType.Fetch:
       data = await FetchStep(step.stepParameters, data)
       break
-    case stepType.SetProp:
+    case StepType.SetProp:
       data = setProp(step.stepParameters, data)
       break
-    case stepType.ParseJSON:
+    case StepType.ParseJSON:
       data.data = JSON.parse(data.data)
       break
-    case stepType.ForEach:
+    case StepType.ForEach:
       data = await forEachStep(step.stepParameters, data)
       break
-    case stepType.CreateArray:
+    case StepType.CreateArray:
       data[step.stepParameters.name] = []
       break
-    case stepType.PushToArray:
+    case StepType.PushToArray:
       data = pushToArray(step.stepParameters, data)
       break
-    case stepType.ParseHTML:
+    case StepType.ParseHTML:
       data.data = HTMLParse(data.data);
       break;
-    case stepType.HTMLQuerySelector:
+    case StepType.HTMLQuerySelector:
       data = HTMLQuerySelector(step.stepParameters, data)
       break;
-    case stepType.Concat:
+    case StepType.Concat:
       data = ConcatStep(step.stepParameters, data)
       break;
-    case stepType.ToString:
+    case StepType.ToString:
       data.data = data.data.toString()
       break;
-    case stepType.HTMLClone:
+    case StepType.HTMLClone:
       data[step.stepParameters.destination] = data.data.clone()
       break;
-    case stepType.DeepCopy:
+    case StepType.DeepCopy:
       data.data = deepCopy(data.data)
       break;
-    case stepType.Slice:
+    case StepType.Slice:
       data = SliceStep(step.stepParameters, data)
       break;
-    case stepType.Split:
+    case StepType.Split:
       data = SplitStep(step.stepParameters, data)
       break;
-    case stepType.Replace:
+    case StepType.Replace:
       data = ReplaceStep(step.stepParameters, data)
       break;
-    case stepType.Spread:
+    case StepType.Spread:
       data = SpreadStep(step.stepParameters, data)
       break;
-    case stepType.If:
+    case StepType.If:
       data = await IfStep(step.stepParameters, data)
       break;
   }

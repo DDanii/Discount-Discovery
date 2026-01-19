@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { useSideBarOpen } from '~/composable/states';
-import type { listQuery } from '~/utils/types/listQuery';
+import type { ListQuery } from '~/utils/types/ListQuery';
 
 const sidebarOpen = useSideBarOpen()
 
 const props = defineProps<{
-    query: listQuery
+    query: ListQuery
 }>()
 
 </script>

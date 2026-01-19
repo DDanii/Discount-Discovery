@@ -12,41 +12,58 @@ datasource db {
 }
 
 model User {
-  id                    Int     @id @default(autoincrement())
-  name                  String  @unique
-  password              String
-  defaultFilterLiked    Boolean @default(true)
-  defaultFilterDisliked Boolean @default(true)
-  defaultFilterNeutral  Boolean @default(true)
+  id       Int    @id @default(autoincrement())
+  name     String @unique
+  password String
 
-  preferences  Preference[]
-  ShopSettings ShopSettings[]
-
+  preferences Preference[]
   categoryPreferences CategoryPreference[]
+  settings Settings?
+}
+
+model Settings {
+  user   User @relation(fields: [userId], references: [id])
+  userId Int  @unique
+
+  ShopSettings    ShopSettings?
+  productFilters  ProductFilters?
+  categoryFilters CategoryFilters?
+}
+
+model ProductFilters {
+  settings Settings @relation(fields: [userId], references: [userId])
+  userId   Int      @unique
+
+  liked    Boolean @default(true)
+  disliked Boolean @default(true)
+  neutral  Boolean @default(true)
+}
+
+model CategoryFilters {
+  settings Settings @relation(fields: [userId], references: [userId])
+  userId   Int      @unique
+
+  liked    Boolean @default(true)
+  disliked Boolean @default(true)
+  neutral  Boolean @default(true)
 }
 
 model ShopSettings {
-  id      Int     @id @default(autoincrement())
-  user    User    @relation(fields: [userId], references: [id])
-  userId  Int
-  shop    Shop    @relation(fields: [shopId], references: [id])
-  shopId  Int
-  enabled Boolean @default(true)
+  settings Settings @relation(fields: [userId], references: [userId])
+  userId   Int      @unique
+  shop     Shop     @relation(fields: [shopId], references: [id])
+  shopId   Int
+  enabled  Boolean  @default(true)
 
   ArgumentSettings ArgumentSettings[]
-
-  @@unique([userId, shopId])
 }
 
 model ArgumentSettings {
-  id             Int           @id @default(autoincrement())
   shopArgument   ShopArguments @relation(fields: [shopArgumentId], references: [id])
   shopArgumentId Int
-  shopSetting    ShopSettings  @relation(fields: [shopSettingId], references: [id])
-  shopSettingId  Int
+  shopSetting    ShopSettings  @relation(fields: [userId], references: [userId])
+  userId         Int           @unique
   value          String
-
-  @@unique([shopArgumentId, shopSettingId])
 }
 
 model ShopArguments {
@@ -84,7 +101,7 @@ model Shop {
   lastUpdated DateTime?
 
   products      Product[]
-  sopSettings  ShopSettings[]
+  shopSettings   ShopSettings[]
   shopArguments ShopArguments[]
 }
 

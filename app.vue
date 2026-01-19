@@ -15,17 +15,11 @@ const sidebarOpen = useSideBarOpen()
         border-green-600 border-2 overflow-clip">
 
         <NuxtLink class="w-full ml-auto border-r-2 border-green-600" to="./">
-          <IconPreferenceFrame class="ml-auto mr-auto">
-            <div class="w-3 h-3 bg-green-300 m-0.5 content-center">
-              <div class="m-auto w-2 h-2 rounded-full bg-yellow-400"/>
-            </div>
-          </IconPreferenceFrame>
+          <IconProductPreference/>
         </NuxtLink>
 
         <NuxtLink class="w-full" to="./categories">
-          <IconPreferenceFrame class="ml-auto mr-auto">
-            <h3 class="text-xs select-none">C</h3>
-          </IconPreferenceFrame>
+          <IconCategoryPreference/>
         </NuxtLink>
 
       </div>

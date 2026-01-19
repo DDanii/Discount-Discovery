@@ -5,12 +5,12 @@ import {
   type ParseStep,
   type ForEachParameters,
   type IfParameters,
-  stepType,
+  StepType,
 } from "./../types/shopConfig";
 
-export const stepTypeSchema = z.nativeEnum(stepType);
+export const StepTypeSchema = z.nativeEnum(StepType);
 
-export const argumentSchema = z.object({
+export const ArgumentSchema = z.object({
   argument: z.string(),
   label: z.string(),
   required: z.boolean().optional(),
@@ -18,87 +18,87 @@ export const argumentSchema = z.object({
 });
 
 export const fetchParametersSchema = z.object({
-  method: z.literal(stepType.Fetch),
+  method: z.literal(StepType.Fetch),
   headersSource: z.string().optional(),
 });
 
 export const literalParametersSchema = z.object({
-  method: z.literal(stepType.Literal),
+  method: z.literal(StepType.Literal),
   data: z.string(),
   destination: z.string().optional(),
 });
 
 export const setPropParametersSchema = z.object({
-  method: z.literal(stepType.SetProp),
+  method: z.literal(StepType.SetProp),
   source: z.string().optional(),
   destination: z.string().optional(),
 });
 
 export const parseJSONParametersSchema = z.object({
-  method: z.literal(stepType.ParseJSON),
+  method: z.literal(StepType.ParseJSON),
 });
 
 export const createArrayParametersSchema = z.object({
-  method: z.literal(stepType.CreateArray),
+  method: z.literal(StepType.CreateArray),
   name: z.string(),
 });
 
 export const pushToArrayParametersSchema = z.object({
-  method: z.literal(stepType.PushToArray),
+  method: z.literal(StepType.PushToArray),
   array: z.string(),
   data: z.string().optional(),
 });
 
 export const parseHTMLParametersSchema = z.object({
-  method: z.literal(stepType.ParseHTML),
+  method: z.literal(StepType.ParseHTML),
 });
 
 export const hTMLQuerySelectorParametersSchema = z.object({
-  method: z.literal(stepType.HTMLQuerySelector),
+  method: z.literal(StepType.HTMLQuerySelector),
   all: z.boolean().optional(),
   selector: z.string(),
 });
 
 export const concatParametersSchema = z.object({
-  method: z.literal(stepType.Concat),
+  method: z.literal(StepType.Concat),
   first: z.string().optional(),
   second: z.string().optional(),
 });
 
 export const toStringParametersSchema = z.object({
-  method: z.literal(stepType.ToString),
+  method: z.literal(StepType.ToString),
 });
 
 export const hTMLCloneParametersSchema = z.object({
-  method: z.literal(stepType.HTMLClone),
+  method: z.literal(StepType.HTMLClone),
   destination: z.string(),
 });
 
 export const deepCopyParametersSchema = z.object({
-  method: z.literal(stepType.DeepCopy),
+  method: z.literal(StepType.DeepCopy),
 });
 
 export const sliceParametersSchema = z.object({
-  method: z.literal(stepType.Slice),
+  method: z.literal(StepType.Slice),
   start: z.number(),
   end: z.number().optional(),
 });
 
 export const splitParametersSchema = z.object({
-  method: z.literal(stepType.Split),
+  method: z.literal(StepType.Split),
   separator: z.string().optional(),
   limit: z.number().optional(),
 });
 
 export const replaceParametersSchema = z.object({
-  method: z.literal(stepType.Replace),
+  method: z.literal(StepType.Replace),
   searchValue: z.string(),
   newValue: z.string(),
   all: z.boolean().optional(),
 });
 
 export const spreadParametersSchema = z.object({
-  method: z.literal(stepType.Spread),
+  method: z.literal(StepType.Spread),
   first: z.string().optional(),
   second: z.string().optional(),
 });
@@ -110,7 +110,7 @@ export const shopConfigSchema: z.ZodSchema<ShopConfig> = z.lazy(() =>
     cron: z.string().optional(),
     timezone: z.string().optional(),
     icon: z.string().optional(),
-    arguments: z.array(argumentSchema).optional(),
+    arguments: z.array(ArgumentSchema).optional(),
     steps: z.array(parseStepSchema),
   }),
 );
@@ -143,7 +143,7 @@ export const parseStepSchema: z.ZodSchema<ParseStep> = z.lazy(() =>
 export const forEachParametersSchema: z.ZodSchema<ForEachParameters> = z.lazy(
   () =>
     z.object({
-      method: z.literal(stepType.ForEach),
+      method: z.literal(StepType.ForEach),
       source: z.string(),
       steps: z.array(parseStepSchema),
     }),
@@ -151,7 +151,7 @@ export const forEachParametersSchema: z.ZodSchema<ForEachParameters> = z.lazy(
 
 export const ifParametersSchema: z.ZodSchema<IfParameters> = z.lazy(() =>
   z.object({
-    method: z.literal(stepType.If),
+    method: z.literal(StepType.If),
     data: z.string().optional(),
     steps: z.array(parseStepSchema),
     elseSteps: z.array(parseStepSchema).optional(),

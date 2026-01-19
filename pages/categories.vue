@@ -3,8 +3,13 @@ import { useCategoryListQuery } from '~/composable/states';
 
 const query = useCategoryListQuery()
 const { data } = useFetch('/api/categories/list', { query: query })
+if (!query.value.fetched)
+  useFetch('/api/settings').then((response) => {
+    Object.assign(query.value, response.data.value?.settings?.categoryFilters)
+    query.value.fetched = true
+  })
 
-async function setPreference(category: string, value: boolean) {
+async function setPreference(category: string, value: boolean | null) {
   await $fetch("/api/categories/preference", {
     method: "POST",
     body: { category: category, value: value }

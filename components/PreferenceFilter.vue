@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { preferenceFilter } from '~/utils/types/listQuery';
+import type { PreferenceFilter } from '~/utils/types/ListQuery';
 
 const props = defineProps<{
-    filter: preferenceFilter
+    filter: PreferenceFilter
 }>()
 
 </script>

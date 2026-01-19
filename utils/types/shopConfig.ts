@@ -1,4 +1,4 @@
-export enum stepType {
+export enum StepType {
     If = "If",
     Fetch = "Fetch",
     Slice = "Slice",
@@ -38,11 +38,11 @@ export interface ShopConfig {
     /** Shop icon url */
     icon?: string
     /** Custom input from user to be used in steps */
-    arguments?: argument[]
+    arguments?: Argument[]
     steps: ParseStep[]
 }
 
-export interface argument {
+export interface Argument {
     /** Unique identifier determines the property the user value will be in */
     argument: string
     /** Label to show the user at the input field */
@@ -64,7 +64,7 @@ export interface ParseStep {
 }
 
 export interface IfParameters {
-    method: stepType.If
+    method: StepType.If
     /** Default value 'data' */
     data?: string
     steps: ParseStep[]
@@ -76,7 +76,7 @@ export interface FetchParameters {
     /**
      * Fetches the url in the data
      */
-    method: stepType.Fetch
+    method: StepType.Fetch
     /**
      * Expects the source for an array with key value pairs
      * example data: data.Accept = json
@@ -85,7 +85,7 @@ export interface FetchParameters {
 }
 
 export interface LiteralParameters {
-    method: stepType.Literal
+    method: StepType.Literal
     data: string
     /**
      * Default value 'data'
@@ -95,7 +95,7 @@ export interface LiteralParameters {
 }
 
 export interface SetPropParameters {
-    method: stepType.SetProp
+    method: StepType.SetProp
     /**
      * Default value 'data'
      * Compatible with doted path
@@ -109,17 +109,17 @@ export interface SetPropParameters {
 }
 
 export interface ParseJSONParameters {
-    method: stepType.ParseJSON
+    method: StepType.ParseJSON
 }
 
 export interface ForEachParameters {
-    method: stepType.ForEach
+    method: StepType.ForEach
     source: string
     steps: ParseStep[]
 }
 
 export interface CreateArrayParameters {
-    method: stepType.CreateArray
+    method: StepType.CreateArray
     name: string
 }
 
@@ -127,7 +127,7 @@ export interface PushToArrayParameters {
     /**
      * Uses deepCopy 
      */
-    method: stepType.PushToArray
+    method: StepType.PushToArray
     array: string
         /**
      * Default value 'data'
@@ -140,17 +140,17 @@ export interface ParseHTMLParameters {
     /**
      * The output HTMLElement can't be used in methods using deepCopy because it contains circular structure
      */
-    method: stepType.ParseHTML
+    method: StepType.ParseHTML
 }
 
 export interface HTMLQuerySelectorParameters {
-    method: stepType.HTMLQuerySelector
+    method: StepType.HTMLQuerySelector
     all?: boolean
     selector: string
 }
 
 export interface ConcatParameters {
-    method: stepType.Concat
+    method: StepType.Concat
     /**
      * Default value 'data'
      * Compatible with doted path
@@ -164,33 +164,33 @@ export interface ConcatParameters {
 }
 
 export interface ToStringParameters {
-    method: stepType.ToString
+    method: StepType.ToString
 }
 
 export interface HTMLCloneParameters {
-    method: stepType.HTMLClone
+    method: StepType.HTMLClone
     destination: string
 }
 
 export interface DeepCopyParameters {
-    method: stepType.DeepCopy
+    method: StepType.DeepCopy
 
 }
 
 export interface SliceParameters {
-    method: stepType.Slice
+    method: StepType.Slice
     start: number
     end?: number
 }
 
 export interface SplitParameters {
-    method: stepType.Split
+    method: StepType.Split
     separator?: string
     limit?: number
 }
 
 export interface ReplaceParameters {
-    method: stepType.Replace
+    method: StepType.Replace
     searchValue: string
     newValue: string
     all?: boolean
@@ -200,7 +200,7 @@ export interface SpreadParameters {
     /**
      * data = {...first, ...second}
      */
-    method: stepType.Spread
+    method: StepType.Spread
     /**
      * Default value 'data'
      * Compatible with doted path
