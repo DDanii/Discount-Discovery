@@ -4,6 +4,8 @@ FROM node:${NODE_VERSION}-slim AS base
 
 ARG PORT=3000
 
+ENV DATABASE_URL="file:/config/database.db"
+
 WORKDIR /src
 
 RUN apt-get update -y && apt-get install -y openssl
@@ -25,12 +27,13 @@ FROM base
 
 ENV PORT=$PORT
 ENV NODE_ENV=production
-ENV DATABASE_URL="file:/config/database.db"
 
 COPY --from=build /src/.output /src/.output
 COPY --from=build /src/prisma /src/prisma
 COPY --from=build /src/store /src/store
 COPY --from=build /src/node_modules /src/node_modules
+
+COPY prisma.config.ts /src/prisma.config.ts
 
 EXPOSE $PORT
 

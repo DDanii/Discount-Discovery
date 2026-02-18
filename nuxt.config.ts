@@ -6,6 +6,35 @@ export default defineNuxtConfig({
   ssr: false,
   modules: [
     '@nuxt/eslint',
-    '@nuxtjs/tailwindcss'
-  ]
+    '@nuxtjs/tailwindcss',
+    '@vite-pwa/nuxt',
+    'nuxt-toast'
+  ],
+  pwa: {
+    registerType: 'autoUpdate',
+    manifest: {
+      name: "Discount Discovery",
+      short_name: "Discounts",
+      description: "Browse shop discounts conviniently",
+      theme_color: "#6a5acd",
+      lang: "en",
+      background_color: "#ffffff",
+    },
+    pwaAssets: {
+      image: "../public/icon.png",
+    },
+    workbox: {
+      navigateFallback: "/",
+      globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
+
+      cleanupOutdatedCaches: true,
+      clientsClaim: true
+    },
+    devOptions: {
+        enabled: true,
+        navigateFallback: '/',
+        type: "module"
+        /* other options */
+      }
+  }
 })

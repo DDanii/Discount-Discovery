@@ -1,4 +1,4 @@
-<img src="./icon.png" alt="icon" width="200"/>
+<img src="./static/icon.png" alt="icon" width="200"/>
 
 # Discount-Discovery
 

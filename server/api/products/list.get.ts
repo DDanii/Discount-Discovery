@@ -1,22 +1,11 @@
-import prisma, { CategoryPreference, Preference, Product, Shop } from "~/lib/prisma";
-import type ProductWithPreference from "~/utils/types/productWithPreference";
-import { listVariables, pageSize, pageSlice } from "~/utils/utils";
+import prisma, { Category, Preference, Product, Shop } from "~/utils/prisma";
+import { ProductWithPreference } from "~/utils/types/productWithPreference";
 
 export default defineEventHandler(async (event) => {
   const userId = 1
   const now = new Date()
   const prefs = (
     await prisma.product.findMany({
-      where: {
-        endDate: {
-          gt: now
-        },
-        AND: {
-          startDate: {
-            lt: now
-          }
-        }
-      },
       include: {
         preferences: {
           where: {
@@ -24,47 +13,28 @@ export default defineEventHandler(async (event) => {
           }
         },
         shop: true,
-        categoryModel: {
-          include: {
-            categoryPreferences: {
-              where: {
-                userId: userId
-              }
-            }
-          }
-        }
+        categoryModel: true
       },
     })
   );
-
-  const [pageNum, filterList] = listVariables(event)
   const prods = prefs
-    .filter((p) => filterList.includes(listPreferenceValue(p)))
     .map(p => mapToProductWithPreference(p))
-    .slice(...pageSlice(pageSize, pageNum))
 
-  return { productList: prods };
+  return prods ;
 
   function mapToProductWithPreference(product: databaseProduct): ProductWithPreference {
     return {
       ...product,
-      preference: product.preferences.first()?.value ?? null,
-      startDate: product.startDate.toDateString(),
-      endDate: product.endDate.toDateString()
+      preference: product.preferences?.[0]?.value ?? null,
+      startDate: product.startDate.getTime(),
+      endDate: product.endDate.getTime()
     }
   }
 
-  function listPreferenceValue(p: databaseProduct): boolean | null {
-    const productPreference = p.preferences.first()?.value
-    const categoryPreference = p.categoryModel?.categoryPreferences.first()?.value
-    return productPreference ?? categoryPreference ?? null
-  }
 
   type databaseProduct = Product & {
     shop: Shop,
     preferences: Preference[],
-    categoryModel: {
-      categoryPreferences: CategoryPreference[]
-    } | null
+    categoryModel: Category | null
   }
 });

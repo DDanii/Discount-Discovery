@@ -8,7 +8,6 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -16,9 +15,9 @@ model User {
   name     String @unique
   password String
 
-  preferences Preference[]
+  preferences         Preference[]
   categoryPreferences CategoryPreference[]
-  settings Settings?
+  settings            Settings?
 }
 
 model Settings {
@@ -28,9 +27,19 @@ model Settings {
   ShopSettings    ShopSettings?
   productFilters  ProductFilters?
   categoryFilters CategoryFilters?
+  productByCategoryFilters ProductByCategoryFilters?
 }
 
 model ProductFilters {
+  settings Settings @relation(fields: [userId], references: [userId])
+  userId   Int      @unique
+
+  liked    Boolean @default(true)
+  disliked Boolean @default(true)
+  neutral  Boolean @default(true)
+}
+
+model ProductByCategoryFilters {
   settings Settings @relation(fields: [userId], references: [userId])
   userId   Int      @unique
 
@@ -101,7 +110,7 @@ model Shop {
   lastUpdated DateTime?
 
   products      Product[]
-  shopSettings   ShopSettings[]
+  shopSettings  ShopSettings[]
   shopArguments ShopArguments[]
 }
 

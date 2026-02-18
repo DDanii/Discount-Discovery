@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { defaultListQuery, FilterType, type TypedFilter } from '~/utils/types/ListQuery';
+import { defaultFilter, FilterType, type TypedFilter } from '~/utils/types/Filter';
 
-const productFilters = reactive({ ...defaultListQuery(), type: FilterType.Product })
-const categoryFilters = reactive({ ...defaultListQuery(), type: FilterType.Category })
+const productFilters = reactive({ ...defaultFilter(), type: FilterType.Product })
+const categoryFilters = reactive({ ...defaultFilter(), type: FilterType.Category })
+const productByCategoryFilters = reactive({ ...defaultFilter(), type: FilterType.ProductByCategory })
 useFetch('/api/settings').then((response) => {
-  Object.assign(productFilters, response.data.value?.settings?.productFilters)
-  Object.assign(categoryFilters, response.data.value?.settings?.categoryFilters)
+  Object.assign(productFilters, response.data.value?.productFilters)
+  Object.assign(categoryFilters, response.data.value?.categoryFilters)
+  Object.assign(productByCategoryFilters, response.data.value?.productByCategoryFilters)
   watch(productFilters, setFilter)
   watch(categoryFilters, setFilter)
+  watch(productByCategoryFilters, setFilter)
 })
 
 async function setFilter(filters: TypedFilter) {
@@ -22,12 +25,28 @@ async function setFilter(filters: TypedFilter) {
 </script>
 
 <template>
-  <div class="rounded-xl border-2 border-green-600 max-w-44 m-2 ml-auto mr-auto">
-    <IconProductPreference class="border-b border-green-600" />
-    <PreferenceFilter :filter="productFilters" />
-  </div>
-  <div class="rounded-xl border-2 border-green-600 max-w-44 m-2 ml-auto mr-auto">
-    <IconCategoryPreference class="border-b border-green-600" />
-    <PreferenceFilter :filter="categoryFilters" />
+  <div class="flex flex-wrap">
+    <div class="rounded-xl border-yellow-500 border-2 w-fit m-2">
+      <IconProductPreference />
+      <div class="flex border-t-2 border-yellow-500 flex-wrap place-content-center">
+
+        <PreferenceFilter :filter="productFilters">
+          <template #header>
+            <IconProductPreference />
+          </template>
+        </PreferenceFilter>
+        <PreferenceFilter :filter="productByCategoryFilters">
+          <template #header>
+            <IconCategoryPreference />
+          </template>
+        </PreferenceFilter>
+      </div>
+    </div>
+
+    <PreferenceFilter :filter="categoryFilters">
+      <template #header>
+        <IconCategoryPreference />
+      </template>
+    </PreferenceFilter>
   </div>
 </template>

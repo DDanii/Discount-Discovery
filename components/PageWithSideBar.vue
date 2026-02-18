@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { useSideBarOpen } from '~/composable/states';
-import type { ListQuery } from '~/utils/types/ListQuery';
+import type { PageFilter } from '~/utils/types/Filter';
 
 const sidebarOpen = useSideBarOpen()
 
 const props = defineProps<{
-    query: ListQuery
+    pageFilter: PageFilter
 }>()
 
 </script>
@@ -21,11 +21,11 @@ const props = defineProps<{
             style="flex-grow:100; scrollbar-color:rgb(22 163 74 / 1) rgb(5 46 22 / 1);">
             <slot name="content"></slot>
             <div class="flex w-full place-items-center">
-                <button :disabled="query.page <= 0" class="ml-auto" @click="query.page--">
+                <button :disabled="pageFilter.page <= 0" class="ml-auto" @click="pageFilter.page--">
                     <IconArrow class="rotate-180" />
                 </button>
-                <div class="text-xl">{{ query.page }}</div>
-                <button class="mr-auto" @click="query.page++">
+                <div class="text-xl">{{ pageFilter.page }}</div>
+                <button class="mr-auto" @click="pageFilter.page++">
                     <IconArrow />
                 </button>
             </div>

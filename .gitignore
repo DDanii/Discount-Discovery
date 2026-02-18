@@ -22,8 +22,8 @@ logs
 !.env.example
 
 #store
-
-fetch_cache
-/generated/prisma
+/prisma/generated
 
 dev.db
+
+sw.*

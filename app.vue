@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { useSideBarOpen } from './composable/states';
+import { categories_name, product_name, settings_name, useSideBarOpen } from './composable/states';
+import type { CategoryWithPreference } from './utils/types/categoryWithPreference';
+import type { ProductWithPreference } from './utils/types/productWithPreference';
+
+useAsyncData(categories_name, (_nuxtApp, { signal }) => 
+  $fetch<CategoryWithPreference[]>('/api/categories/list', { signal }))
+useAsyncData(product_name, (_nuxtApp, { signal }) => 
+  $fetch<ProductWithPreference[]>('/api/products/list', { signal }))
+
+useFetch('/api/settings', {key: settings_name})
 
 const sidebarOpen = useSideBarOpen()
 </script>
@@ -29,6 +38,7 @@ const sidebarOpen = useSideBarOpen()
         </NuxtLink>
       </button>
     </nav>
+    <NuxtPwaAssets />
     <NuxtPage />
   </div>
 </template>

@@ -1,4 +1,4 @@
-export default interface CategoryWithPreference {
+export type CategoryWithPreference  = {
     name: string;
     preference: boolean | null;
 }

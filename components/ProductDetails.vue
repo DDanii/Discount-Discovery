@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type ProductWithPreference from "@@/utils/types/productWithPreference"
+import type { ProductWithPreference } from "@@/utils/types/productWithPreference"
 
 defineProps<{
   product: ProductWithPreference
@@ -21,6 +21,6 @@ defineProps<{
     </div>
     <h3 class="m-auto">{{ product.category }}</h3>
     <h3 class="m-auto">{{ product.price }}</h3>
-    <h3 class="m-auto">{{ product.startDate }} - {{ product.endDate }}</h3>
+    <h3 class="m-auto">{{ new Date(product.startDate).toDateString() }} - {{ new Date(product.endDate).toDateString() }}</h3>
   </div>
 </template>

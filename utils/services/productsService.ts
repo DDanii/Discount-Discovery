@@ -11,8 +11,9 @@ import {
 } from "../types/shopConfig";
 import { parse as YamlParse } from "yaml";
 import { shopConfigSchema } from "../validators/shopConfigSchema";
-import prisma, { type Product, type Shop } from "../../lib/prisma";
+import prisma, { type Product, type Shop } from "../prisma";
 import { CronJob } from "cron";
+import { deepCopy } from "../utils";
 
 const cacheDateDifference = 43400000;
 const defaultCron = "0 6 * * *";
@@ -287,10 +288,6 @@ async function forEachStep(stepParameters: ForEachParameters, data: any): Promis
     console.log(source)
   }
   return data
-}
-
-function deepCopy(data: any): any {
-  return JSON.parse(JSON.stringify(data))
 }
 
 function setProp(stepParameters: SetPropParameters, data: any): any {

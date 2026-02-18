@@ -5,5 +5,5 @@ export default defineEventHandler(async () => {
 
     const settings = await getSettings(userId);
 
-    return { settings: settings }
+    return settings
 })

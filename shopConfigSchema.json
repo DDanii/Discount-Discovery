@@ -2,6 +2,31 @@
   "$ref": "#/definitions/ShopConfig",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
+    "Argument": {
+      "additionalProperties": false,
+      "properties": {
+        "argument": {
+          "description": "Unique identifier determines the property the user value will be in",
+          "type": "string"
+        },
+        "defaultValue": {
+          "type": "string"
+        },
+        "label": {
+          "description": "Label to show the user at the input field",
+          "type": "string"
+        },
+        "required": {
+          "description": "If true, the user must provide a value",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "argument",
+        "label"
+      ],
+      "type": "object"
+    },
     "ConcatParameters": {
       "additionalProperties": false,
       "properties": {
@@ -350,7 +375,7 @@
         "arguments": {
           "description": "Custom input from user to be used in steps",
           "items": {
-            "$ref": "#/definitions/argument"
+            "$ref": "#/definitions/Argument"
           },
           "type": "array"
         },
@@ -457,31 +482,6 @@
       },
       "required": [
         "method"
-      ],
-      "type": "object"
-    },
-    "argument": {
-      "additionalProperties": false,
-      "properties": {
-        "argument": {
-          "description": "Unique identifier determines the property the user value will be in",
-          "type": "string"
-        },
-        "defaultValue": {
-          "type": "string"
-        },
-        "label": {
-          "description": "Label to show the user at the input field",
-          "type": "string"
-        },
-        "required": {
-          "description": "If true, the user must provide a value",
-          "type": "boolean"
-        }
-      },
-      "required": [
-        "argument",
-        "label"
       ],
       "type": "object"
     }

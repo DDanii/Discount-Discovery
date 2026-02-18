@@ -1,13 +1,11 @@
-import { defaultListQuery, type ListQuery } from "~/utils/types/ListQuery";
+import type { Settings } from "~/utils/types/settings";
 
-export const listQuery_name = 'listQuery'
-export const categoryListQuery_name = 'categoryListQuery'
-
-export const useListQuery = () =>
-    useState<ListQuery>(listQuery_name, defaultListQuery)
-
-export const useCategoryListQuery = () =>
-    useState<ListQuery>(categoryListQuery_name, defaultListQuery)
+export const settings_name = 'settings'
+export const categories_name = 'categories'
+export const product_name = 'product'
 
 export const useSideBarOpen = () =>
     useState<boolean>('sideBarOpen', () => false)
+
+export const useSettings = () =>
+    useState<Settings>(settings_name, () => { return {} as Settings})

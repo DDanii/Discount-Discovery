@@ -1,14 +1,10 @@
-export default interface ProductWithPreference {
-  id: number;
-  name: string | null;
-  image: string | null;
-  price: number | null;
-  preference: boolean | null;
-  shop: {
-    name: string;
-    icon: string | null;
+import type { Product, Shop } from "~/utils/prisma";
+
+export type ProductWithPreference =
+  Omit<Product, 'startDate' | 'endDate'> & {
+    shop: Omit<Shop, 'lastUpdated'>;
+    preference: boolean | null;
+    startDate: number;
+    endDate: number;
+    category: string | null
   }
-  startDate: string;
-  endDate: string;
-  category: string | null;
-}
