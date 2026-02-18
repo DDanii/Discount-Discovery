@@ -15,7 +15,7 @@ import prisma, { type Product, type Shop } from "../../lib/prisma";
 import { CronJob } from "cron";
 
 const cacheDateDifference = 43400000;
-const defaultCron = "0 6 * * *";
+const defaultCron = "0 7 * * *";
 const jobs = [] as CronJob[]
 
 let year = (new Date()).getFullYear()
