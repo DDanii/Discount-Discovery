@@ -1,14 +1,24 @@
-import {
-    type ProductByCategoryFilters,
-    type Settings as DbSettings,
-    type CategoryFilters,
-    type ProductFilters,
-    type ShopSettings
-} from "~/utils/prisma"
+import { defaultFilter, type Filter } from "./Filter"
 
-export type Settings = DbSettings & {
-    productFilters: ProductFilters,
-    categoryFilters: CategoryFilters,
-    shopSettings: ShopSettings,
-    productByCategoryFilters: ProductByCategoryFilters
-} | null
+export type Settings = {
+    productFilters: Filter,
+    categoryFilters: Filter,
+    shopSettings: {
+        shopId: string,
+        enabled: boolean
+    }[],
+    productByCategoryFilters: Filter
+}
+
+/**
+ * its a function instead of const so it
+ * creatse new object every time it is used
+ */
+export function defaultSettings(): Settings {
+    return {
+        productFilters: defaultFilter(),
+        categoryFilters: defaultFilter(),
+        productByCategoryFilters: defaultFilter(),
+        shopSettings: []
+    }
+}

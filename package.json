@@ -17,12 +17,15 @@
     "gen": "npm run gen-zod && npm run gen-schema && npm run gen-prisma",
     "migrate-create": "prisma migrate dev",
     "migrate-prisma": "prisma migrate deploy",
-    "docker": "docker compose -f dev.yml build && docker compose -f dev.yml up"
+    "docker": "docker compose -f dev.yml build && docker compose -f dev.yml up",
+    "couch": "docker compose -f couchdb.yml up"
   },
   "dependencies": {
     "@nuxt/eslint": "^1.13.0",
     "@prisma/adapter-better-sqlite3": "^7.3.0",
     "@prisma/client": "^7.3.0",
+    "@types/pouchdb": "^6.4.2",
+    "@types/pouchdb-upsert": "^2.2.9",
     "@vite-pwa/nuxt": "^1.1.1",
     "cron": "^4.4.0",
     "eslint": "^9.39.2",
@@ -30,6 +33,10 @@
     "node-html-parser": "^7.0.2",
     "nuxt": "^4.3.0",
     "nuxt-toast": "^1.4.0",
+    "pouchdb": "^9.0.0",
+    "pouchdb-authentication": "^1.1.3",
+    "pouchdb-find": "^9.0.0",
+    "pouchdb-upsert": "^2.2.0",
     "prisma": "^7.3.0",
     "vue": "^3.5.27",
     "vue-router": "^5.0.2",

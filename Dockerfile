@@ -18,9 +18,9 @@ RUN npm install
 
 COPY --link . .
 
-RUN npm run build
-
 RUN npx prisma generate 
+
+RUN npm run build
 
 # Run
 FROM base

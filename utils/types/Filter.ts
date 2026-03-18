@@ -1,4 +1,11 @@
-export function defaultFilter(): Filter {
+import type { Preference } from "./preference";
+
+
+/**
+ * its a function instead of const so it
+ * creatse new object every time it is used
+ */
+export function defaultFilter(): Filter{ 
     return {
         liked: true,
         neutral: true,
@@ -36,14 +43,4 @@ export function defaultProductFilters(): ProductFilters {
         categoryFilter: defaultFilter(),
         page: 0
     }
-}
-
-export type TypedFilter = {
-    type: FilterType
-} & Filter
-
-export enum FilterType{
-    Product,
-    Category,
-    ProductByCategory
 }

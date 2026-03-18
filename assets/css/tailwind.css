@@ -1,0 +1,11 @@
+@tailwind base;
+
+@tailwind components;
+
+@tailwind utilities;
+
+@layer base {
+  *{
+    border-color: oklch(62.7% 0.194 149.214); 
+  }
+}

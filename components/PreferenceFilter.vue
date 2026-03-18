@@ -7,12 +7,12 @@ const props = defineProps<{
 
 </script>
 <template>
-    <div class="rounded-xl border-2 border-green-600 max-w-44 m-2 bg-black flex flex-col">
-        <div class="border-b-2 border-green-600">
+    <div class="rounded-xl border-2  max-w-44 m-2 bg-black flex flex-col">
+        <div class="border-b-2 ">
             <slot name="header" />
         </div>
         <div class="m-auto flex flex-col max-h-full grow justify-center p-1">
-            <FilterButton :state="filter.liked" @change="(value) => filter.liked = value" class="mt-">
+            <FilterButton :state="filter.liked" @change="(value) => filter.liked = value">
                 <IconTick is-filled />
             </FilterButton>
             <FilterButton :state="filter.neutral" @change="(value) => filter.neutral = value">

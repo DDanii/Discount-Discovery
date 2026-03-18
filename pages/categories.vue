@@ -1,53 +1,63 @@
 <script setup lang="ts">
-import type { CategoryWithPreference } from '~/utils/types/categoryWithPreference';
-import type { Settings } from '~/utils/types/settings';
-import { categories_name, settings_name } from '~/composable/states';
+import type { CategoryWithPreference } from '~/utils/types/category';
 import { defaultFilterWithPage } from '~/utils/types/Filter';
-import optimisticUpdate from '~/utils/optimisticUpdate';
+import { CategoryDB, getDocs, getSettings, PreferencesDB } from '~/database/database';
+import { PreferenceType, type Preference } from '~/utils/types/preference';
+import { prefMapper } from '~/utils/utils';
 
-const query = reactive(defaultFilterWithPage())
+const settings = await getSettings()
+const categoriesDB = new CategoryDB()
+const preferencesDB = new PreferencesDB()
+const preferencesData = ref([] as Preference[])
+const data = ref([] as CategoryWithPreference[])
+const filters = reactive(defaultFilterWithPage())
 const filtered = ref({} as CategoryWithPreference[])
-const { data: settings } = useNuxtData<Settings>(settings_name)
-const { data: fullCategoryList } = useNuxtData<CategoryWithPreference[]>(categories_name)
 
-watch(settings, setDefaultFilters)
+async function updateData() {
+  const allPreferences = await preferencesDB.allDocs({ include_docs: true })
+  preferencesData.value = getDocs(allPreferences)
+
+  const allProduct = await categoriesDB.allDocs({include_docs: true})
+  data.value = prefMapper(getDocs(allProduct), preferencesData.value)
+}
+
 setDefaultFilters()
+await updateData()
 
-watch([query, fullCategoryList], filter)
-filter()
+watch([filters, data], filtering)
+filtering()
 
 function setDefaultFilters() {
-  Object.assign(query, settings.value?.categoryFilters)
+  Object.assign(filters, settings?.categoryFilters)
 }
 
-function filter() {
-  if (!fullCategoryList.value?.filter) return
+function filtering() {
+  if (!data.value) return
 
-  const categoryPreferenceFilter = createFilterList(query)
+  const categoryPreferenceFilter = createFilterList(filters)
 
-  filtered.value = fullCategoryList.value
+  filtered.value = data.value
     .filter(c => categoryPreferenceFilter.includes(c.preference))
-    .slice(...pageSlice(pageSize, query.page))
+    .slice(...pageSlice(pageSize, filters.page))
 }
 
-async function setPreference(category: string, value: boolean | null) {
-  await optimisticUpdate('/api/categories/preference',
-    { category: category, value: value },
-    categories_name,
-    () => {
-      let updated = fullCategoryList.value?.find(c => c.name == category)
-      if (updated) {
-        updated.preference = value
-      }
-    }
-  )
+async function setPreference(id: string, value: boolean | null) {
+  const pref = data.value.find(p => p._id == id)
+  if (pref)
+    pref.preference = value
+  data.value = [...data.value]
+  console.log(await preferencesDB.upsert(id, (doc) => {
+    doc.value = value
+    doc.type = PreferenceType.category
+    return doc as Preference
+  }))
 }
 </script>
 
 <template>
-  <PageWithSideBar :pageFilter=query>
+  <PageWithSideBar :pageFilter=filters>
     <template #sideBar>
-      <PreferenceFilter :filter=query>
+      <PreferenceFilter :filter=filters>
         <template #header>
           <IconCategoryPreference />
         </template>
@@ -56,10 +66,10 @@ async function setPreference(category: string, value: boolean | null) {
 
     <template #content>
       <div class="min-w-64 flex flex-wrap place-content-evenly">
-        <PreferenceFrame v-for="category in filtered" :key="category.name" :preference="category.preference"
-          @preference-change="(event) => setPreference(category.name, event.value)">
+        <PreferenceFrame v-for="category in filtered" :key="category._id" :preference="category.preference"
+          @preference-change="(event) => setPreference(category._id, event.value)">
           <template #content>
-            <h3 class="text-center mb-10 mt-10">{{ category.name }}</h3>
+            <h3 class="text-center mb-10 mt-10">{{ category._id }}</h3>
           </template>
         </PreferenceFrame>
       </div>

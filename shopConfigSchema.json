@@ -394,6 +394,10 @@
         "name": {
           "type": "string"
         },
+        "setEndDateToDayEnd": {
+          "description": "If true, will automatically set all endDate to the last minute of that day example: 2026.12.19 -> 2026.12.19 23:59",
+          "type": "boolean"
+        },
         "steps": {
           "items": {
             "$ref": "#/definitions/ParseStep"

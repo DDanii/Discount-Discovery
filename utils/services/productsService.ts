@@ -11,27 +11,19 @@ import {
 } from "../types/shopConfig";
 import { parse as YamlParse } from "yaml";
 import { shopConfigSchema } from "../validators/shopConfigSchema";
-import prisma, { type Product, type Shop } from "../prisma";
 import { CronJob } from "cron";
 import { deepCopy } from "../utils";
+import { DB, DBLocation, DBName, docMap } from "~/database/database";
+import type { Shop } from "../types/shop";
+import { productsEqual, type Product } from "../types/product";
+import type { Category } from "../types/category";
+import { dbUrl, dbUser, dbPassword } from "../constants"
 
 const cacheDateDifference = 43400000;
 const defaultCron = "0 6 * * *";
 const jobs = [] as CronJob[]
 
-let year = (new Date()).getFullYear()
-let month = (new Date()).getMonth()
-let tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
-
 export class ProductsService {
-
-  public async createUser() {
-    await prisma.user.upsert({
-      where: { id: 1 },
-      create: { id: 1, name: "Admin", password: "dummy" },
-      update: {}
-    })
-  }
 
   public async fetch() {
     const files = readdirSync('store')
@@ -45,6 +37,8 @@ export class ProductsService {
 
 async function handleConfigFile(fname: string) {
   console.log(`Handling file: ${fname}`)
+  DB.setRemoteUrl(dbUrl ?? null)
+  const shopDB = new DB<Shop>(DBLocation.remote, DBName.shop, dbUser, dbPassword)
 
   try {
     const file = readFileSync(`store/${fname}`, 'utf8')
@@ -58,22 +52,38 @@ async function handleConfigFile(fname: string) {
       return
     }
 
-    const shop = await prisma.shop.upsert({
-      where: { source: fname },
-      create: { source: fname, name: config.data.name },
-      update: { source: fname, name: config.data.name }
-    })
+    const shopDoc = {
+      source: fname,
+      name: config.data.name,
+      icon: config.data.icon,
+    } as Shop
+
+    let shopId: string
+
+    let shop = docMap((await shopDB.find({ selector: { source: { $eq: fname } } })).docs[0])
+
+    if (shop._id) {
+      shopId = shop._id
+      shopDoc._id = shopId
+      shopDB.upsert(shopDoc._id, (doc) => {
+        return shopDoc
+      })
+    } else {
+      const response = await shopDB.post(shopDoc)
+      shopId = response.id
+      shop = await shopDB.get(shopId)
+    }
 
     const job = new CronJob(config.data.cron ?? defaultCron, async () => {
-      await gatherProducts(config.data, shop)
+      new Gathering(config.data, shopId)
     }, null, true //TODO handle timezone
     )
     const dates = job.nextDates(2)
 
     const cronDiff = (dates[1]?.toMillis() ?? cacheDateDifference) - (dates[0]?.toMillis() ?? 0)
 
-    if (!shop.lastUpdated || ((dates[0]?.toMillis() ?? 0) - shop.lastUpdated.getTime()) > cronDiff) {
-      await gatherProducts(config.data, shop);
+    if (!shop.lastUpdated || ((dates[0]?.toMillis() ?? 0) - shop.lastUpdated) > cronDiff) {
+      new Gathering(config.data, shopId);
     }
 
     jobs.push(job)
@@ -85,75 +95,97 @@ async function handleConfigFile(fname: string) {
   }
 }
 
-async function gatherProducts(config: ShopConfig, shop: Shop) {
-  let data = { DDParsedProducts: [], currentYear: year.toString() };
-  year = (new Date()).getFullYear()
-  month = (new Date()).getMonth()
-  tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
-  data = await stepsManager(config.steps, data)
+class Gathering {
 
-  await gatherCategories(data.DDParsedProducts)
-  await handleProducts(data.DDParsedProducts, config, shop)
-
-  await prisma.shop.update({
-    where: { id: shop.id },
-    data: { lastUpdated: new Date() }
-  })
-}
-
-async function gatherCategories(products: Product[]) {
-  const filtered = products.map(p => p.category ?? "")
-    .filter(c => c !== "")
-    .filter(onlyUnique)
-
-  for (const category of filtered){
-    await prisma.category.upsert({
-      where: { name: category },
-      create: { name: category },
-      update: {}
-    });
+  constructor(config: ShopConfig, shopId: string) {
+    this.productDB = new DB<Product>(DBLocation.remote, DBName.product, dbUser, dbPassword)
+    this.categryDB = new DB<Category>(DBLocation.remote, DBName.category, dbUser, dbPassword)
+    this.shopDB = new DB<Shop>(DBLocation.remote, DBName.shop, dbUser, dbPassword)
+    this.year = (new Date()).getFullYear()
+    this.month = (new Date()).getMonth()
+    this.tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
+    this.gatherProducts(config, shopId)
   }
-}
 
-function onlyUnique(value: string, index: number, array: string[]) {
-  return array.indexOf(value) === index;
-}
+  year: number
+  month: number
+  tomorrow: Date
+  shopDB: DB<Shop>
+  productDB: DB<Product>
+  categryDB: DB<Category>
 
-async function handleProducts(products: Product[], config: ShopConfig, shop: Shop) {
-  const mappedProducts = products.map(p => mapDates(p, config))
+  private async gatherProducts(config: ShopConfig, shopId: string) {
 
-  for (const product of mappedProducts){
-    await prisma.product.upsert({
-      where: { shopId_externalId: { externalId: product.externalId, shopId: shop.id } },
-      update: { ...product, shopId: shop.id },
-      create: { ...product, shopId: shop.id }
-    });
+    let data = { DDParsedProducts: [], currentYear: this.year.toString() };
+    data = await stepsManager(config.steps, data)
+
+    this.gatherCategories(data.DDParsedProducts)
+    await this.handleProducts(data.DDParsedProducts, config, shopId)
+
+    await this.shopDB.upsert(shopId, (doc) => {
+      doc.lastUpdated = new Date().getTime()
+      return doc as Shop
+    })
   }
-}
 
-function mapDates(product: Product, config: ShopConfig): Product {
-  product.startDate = product.startDate ? new Date(product.startDate) : new Date();
-  product.endDate = product.endDate ? new Date(product.endDate) : tomorrow;
-  if (config.autoCorrectYears) {
-    product = correctYears(product);
-  }
-  return product
-}
+  private async gatherCategories(products: Product[]) {
+    const filtered = products.map(p => p.category ?? "")
+      .filter(c => c !== "")
+      .filter(this.onlyUnique)
 
-function correctYears(product: Product): Product {
-  if (month == 11) {
-    if (product.startDate.getMonth() == 0)
-      product.startDate.setFullYear(year + 1)
-    if (product.endDate.getMonth() == 0)
-      product.endDate.setFullYear(year + 1)
+    for (const category of filtered) {
+      const result = await this.categryDB.putIfNotExists({ _id: category })
+    }
   }
-  else if (month == 0) {
-    if (product.startDate.getMonth() == 11)
-      product.startDate.setFullYear(year - 1)
-    if (product.endDate.getMonth() == 11)
-      product.endDate.setFullYear(year - 1)
+
+  private onlyUnique(value: string, index: number, array: string[]) {
+    return array.indexOf(value) === index;
   }
-  return product
+
+  private handleProducts(products: Product[], config: ShopConfig, shopId: string) {
+    const mappedProducts = products.map(p => this.mapDates(p, config))
+    console.log(`fetched ${mappedProducts.length} product(s)`)
+
+    mappedProducts.forEach((p) => this.saveProduct(p, shopId))
+  }
+
+  private async saveProduct(product: Product, shopId: string) {
+    const id = `${shopId}:${product.externalId}`
+
+    await this.productDB.upsert(id, (doc) => {
+      if (productsEqual({ ...product, _id: id }, doc as Product)) return false
+      Object.assign(doc, product)
+      doc.shopId = shopId
+      return doc as Product
+    })
+  }
+
+  private mapDates(product: Product, config: ShopConfig): Product {
+    const startDate = product.startDate ? new Date(product.startDate) : new Date();
+    const endDate = product.endDate ? new Date(product.endDate) : this.tomorrow;
+
+    if (config.autoCorrectYears) this.correctYears(startDate, endDate)
+    if (config.setEndDateToDayEnd) endDate.setHours(23, 59)
+
+    product.startDate = startDate.getTime();
+    product.endDate = endDate.getTime();
+    return product
+  }
+
+  private correctYears(startDate: Date, endDate: Date) {
+    if (this.month == 11) {
+      if (startDate.getMonth() == 0)
+        startDate.setFullYear(this.year + 1)
+      if (endDate.getMonth() == 0)
+        endDate.setFullYear(this.year + 1)
+    }
+    else if (this.month == 0) {
+      if (startDate.getMonth() == 11)
+        startDate.setFullYear(this.year - 1)
+      if (endDate.getMonth() == 11)
+        endDate.setFullYear(this.year - 1)
+    }
+  }
 }
 
 async function stepsManager(steps: ParseStep[], data: any): Promise<any> {
@@ -231,10 +263,7 @@ async function stepResolver(step: ParseStep, data: any): Promise<any> {
 }
 
 async function FetchStep(parameters: FetchParameters, data: any): Promise<any> {
-  // data.data = readFileSync(`test.data`, 'utf8')
-  // return data
-
-  console.log("fetching")
+  console.log(`fetching: ${data.data}`)
   const request = new Request(data.data)
   if (parameters.headersSource) {
     for (const header of data[parameters.headersSource]) {

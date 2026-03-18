@@ -28,6 +28,12 @@ export interface ShopConfig {
      */
     autoCorrectYears?: boolean
 
+    /** If true, will automatically set all endDate
+     * to the last minute of that day
+     * example: 2026.12.19 -> 2026.12.19 23:59
+     */
+    setEndDateToDayEnd?: boolean
+
     name: string
     /** Cron defined time when to run the steps
     *  Default 6 oclock in the morning

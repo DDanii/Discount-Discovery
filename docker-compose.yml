@@ -1,11 +1,34 @@
+x-common-environment: &common-env
+  COUCHDB_USER: admin
+  COUCHDB_PASSWORD: password
+
 services:
   discount-discovery:
     image: ddanii/discount-discovery
     ports:
       - "3000:3000"
     environment:
-      - "DATABASE_URL=file:/config/database.db"
+      <<: *common-env
+      DATABASE_URL: file:/config/database.db
+      DISCOUT_DISCOVERY_DB_URL: http://couchdb:5984
+      DISCOUT_DISCOVERY_DB_SETUP: true
     volumes:
       - type: bind
-        source: ../config
+        source: ./config
         target: /config
+    depends_on: 
+      - couchdb
+
+  couchdb:
+    image: couchdb
+    ports:
+      - "5984:5984"
+    environment:
+      <<: *common-env
+    volumes:
+      - type: bind
+        source: ./couchdb/data
+        target: /opt/couchdb/data
+      - type: bind
+        source: ./couchdb/local.d
+        target: /opt/couchdb/etc/local.d

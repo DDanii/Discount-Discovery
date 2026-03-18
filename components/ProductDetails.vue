@@ -1,26 +1,30 @@
 <script setup lang="ts">
-import type { ProductWithPreference } from "@@/utils/types/productWithPreference"
+import { ShopDB } from "~/database/database";
+import type { ProductWithPreferences } from "~/utils/types/product"
 
-defineProps<{
-  product: ProductWithPreference
+const props = defineProps<{
+  product: ProductWithPreferences
 }>()
+
+const shopDB = new ShopDB()
+const shop = (await shopDB.get(props.product.shopId))
+
 </script>
 <template>
 
-  <div
-    class="flex flex-col m-auto w-fit h-fit max-w-full max-h-full mt-auto bg-black rounded-xl border-green-600 border-2 p-2">
+  <div class="flex flex-col m-auto w-fit h-fit max-w-full max-h-full mt-auto bg-black rounded-xl  border-2 p-2">
     <div class="flex">
-      <icon-cross class="invisible" />
-      <h3 class="m-auto">{{ product.name }}</h3>
+      <img :src="shop.icon ?? ''" class="w-8" :class="{ ['invisible']: !shop.icon }" />
+      <h3 class="m-auto">{{ shop.name }}</h3>
       <icon-cross />
     </div>
     <img :src="product.image ?? ''" class="mt-2 mb-2 m-auto h-full w-min max-h-full max-w-full rounded-xl">
-    <div class="m-auto">
-      <img :src="product.shop.icon ?? ''" />
-      <h3>{{ product.shop.name }}</h3>
-    </div>
-    <h3 class="m-auto">{{ product.category }}</h3>
+
+    <h3 class="m-auto">{{ product.name }}</h3>
     <h3 class="m-auto">{{ product.price }}</h3>
-    <h3 class="m-auto">{{ new Date(product.startDate).toDateString() }} - {{ new Date(product.endDate).toDateString() }}</h3>
+    <h3 class="m-auto">{{ product.category }}</h3>
+    <h3 class="m-auto">
+      {{ new Date(product.startDate).toDateString() }} - {{ new Date(product.endDate).toDateString() }}
+    </h3>
   </div>
 </template>

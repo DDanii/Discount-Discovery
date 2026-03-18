@@ -1,27 +1,19 @@
 <script setup lang="ts">
-import { defaultFilter, FilterType, type TypedFilter } from '~/utils/types/Filter';
+import { getSettings, setSettings } from '~/database/database';
+import { defaultSettings } from '~/utils/types/settings';
+const settingsFromDB = await getSettings()
 
-const productFilters = reactive({ ...defaultFilter(), type: FilterType.Product })
-const categoryFilters = reactive({ ...defaultFilter(), type: FilterType.Category })
-const productByCategoryFilters = reactive({ ...defaultFilter(), type: FilterType.ProductByCategory })
-useFetch('/api/settings').then((response) => {
-  Object.assign(productFilters, response.data.value?.productFilters)
-  Object.assign(categoryFilters, response.data.value?.categoryFilters)
-  Object.assign(productByCategoryFilters, response.data.value?.productByCategoryFilters)
-  watch(productFilters, setFilter)
-  watch(categoryFilters, setFilter)
-  watch(productByCategoryFilters, setFilter)
-})
+const settings = reactive(defaultSettings())
 
-async function setFilter(filters: TypedFilter) {
-  await $fetch("/api/settings/filter", {
-    method: "POST",
-    body: { ...filters }
-  }).catch((error) => {
-    console.error("Error updating default filter settings:", error);
-  });
+Object.assign(settings.productFilters, settingsFromDB.productFilters)
+Object.assign(settings.categoryFilters, settingsFromDB.categoryFilters)
+Object.assign(settings.productByCategoryFilters, settingsFromDB.productByCategoryFilters)
+
+watch(settings, updateSettings)
+
+function updateSettings() {
+  setSettings(deepCopy(settings))
 }
-
 </script>
 
 <template>
@@ -30,12 +22,12 @@ async function setFilter(filters: TypedFilter) {
       <IconProductPreference />
       <div class="flex border-t-2 border-yellow-500 flex-wrap place-content-center">
 
-        <PreferenceFilter :filter="productFilters">
+        <PreferenceFilter :filter="settings.productFilters">
           <template #header>
             <IconProductPreference />
           </template>
         </PreferenceFilter>
-        <PreferenceFilter :filter="productByCategoryFilters">
+        <PreferenceFilter :filter="settings.productByCategoryFilters">
           <template #header>
             <IconCategoryPreference />
           </template>
@@ -43,10 +35,12 @@ async function setFilter(filters: TypedFilter) {
       </div>
     </div>
 
-    <PreferenceFilter :filter="categoryFilters">
+    <PreferenceFilter :filter="settings.categoryFilters">
       <template #header>
         <IconCategoryPreference />
       </template>
     </PreferenceFilter>
+    <DBProfileManager />
+
   </div>
 </template>

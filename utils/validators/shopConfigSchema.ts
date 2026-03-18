@@ -99,6 +99,7 @@ export const spreadParametersSchema = z.object({
 
 export const shopConfigSchema: z.ZodSchema<ShopConfig> = z.lazy(() => z.object({
     autoCorrectYears: z.boolean().optional(),
+    setEndDateToDayEnd: z.boolean().optional(),
     name: z.string(),
     cron: z.string().optional(),
     timezone: z.string().optional(),

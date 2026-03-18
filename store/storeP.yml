@@ -1,4 +1,5 @@
 name: Penny
+setEndDateToDayEnd: true
 steps:
   - stepParameters:
       method: CreateArray

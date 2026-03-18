@@ -1,4 +1,5 @@
 autoCorrectYears: true
+setEndDateToDayEnd: true
 name: Lidl
 steps:
   - stepParameters: 
@@ -171,7 +172,7 @@ steps:
                           destination: product.externalId
                       - stepParameters: 
                           method: SetProp
-                          source: data.label
+                          source: data.gridbox.meta.fullTitle
                           destination: product.name
                       - stepParameters: 
                           method: SetProp

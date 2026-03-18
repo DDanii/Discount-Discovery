@@ -6,6 +6,10 @@ A selfhost app to easyly browse and manage several stores discounts comfortably.
 
 The project is in early stage and only have parsers for some Hungarian stores.
 
+It requires a running CouchDB instance
+
+After launching the app you have to log in to CouchDB in settings.
+
 # Screenshots
 
 <img src="./media/desktop.png" alt="desktop screenshot" width="400"/>
@@ -18,22 +22,13 @@ The project is in early stage and only have parsers for some Hungarian stores.
 
 ### Docker Compose
 
+Set password and COUCHDB_USER and COUCHDB_PASSWORD in the docker-compose.yml file
+
 Start Discount-Discovery in detached mode (running in the background):
 
 ```bash
 docker compose up -d
 ```
-
-
-### Docker CLI
-
-Deploy Discount-Discovery:
-
-```bash
-docker pull ddanii/discount-discovery
-docker run -d --name discount-discovery -p 3000:3000 ddanii/discount-discovery --mount type=bind,src=../config,dst=/config
-```
-
 
 
 ## Roadmap
@@ -42,5 +37,8 @@ docker run -d --name discount-discovery -p 3000:3000 ddanii/discount-discovery -
 - [x] product details with popup 
 - [ ] past, future and more product sorting
 - [ ] shop sources from settings
-- [ ] user management 
+- [ ] user management
+- [x] offline first
+- [ ] data syncronication indicator
+- [ ] merged view
 

@@ -1,62 +1,78 @@
 <script setup lang="ts">
-import PageWithSideBar from '~/components/PageWithSideBar.vue';
+import { PreferencesDB, ProductsDB, getSettings, getDocs } from '~/database/database';
+import { PreferenceType, type Preference } from '~/utils/types/preference';
+import type { ProductWithPreferences } from '~/utils/types/product';
 import PreferenceFilter from '~/components/PreferenceFilter.vue';
+import PageWithSideBar from '~/components/PageWithSideBar.vue';
 import PreferenceFrame from '~/components/PreferenceFrame.vue';
-import { categories_name, product_name, settings_name } from '~/composable/states';
 import { defaultProductFilters } from '~/utils/types/Filter';
-import type { CategoryWithPreference } from '~/utils/types/categoryWithPreference';
-import type { ProductWithPreference } from '~/utils/types/productWithPreference';
-import type { Settings } from '~/utils/types/settings';
+import { prefMapper } from '~/utils/utils';
 
-const { data } = useNuxtData<ProductWithPreference[]>(product_name)
-const { data: settings } = useNuxtData<Settings>(settings_name)
-const { data: fullCategoryList } = useNuxtData<CategoryWithPreference[]>(categories_name)
-
+const settings = await getSettings()
 const filters = reactive(defaultProductFilters())
-const filtered = ref({} as ProductWithPreference[])
+Object.assign(filters.productFilter, settings?.productFilters)
+Object.assign(filters.categoryFilter, settings?.productByCategoryFilters)
 
-watch(settings, setDefaultFilters)
-setDefaultFilters()
+const productsDB = new ProductsDB()
+productsDB.changes({ since: 'now' }).on('change', updateData)
+const preferencesDB = new PreferencesDB()
+preferencesDB.changes({ since: 'now' }).on('change', updateData)
 
-function setDefaultFilters() {
-  Object.assign(filters.productFilter, settings.value?.productFilters)
-  Object.assign(filters.categoryFilter, settings.value?.productByCategoryFilters)
+const data = ref([] as ProductWithPreferences[])
+const filtered = ref([] as ProductWithPreferences[])
+let preferencesData = [] as Preference[]
+
+watch([filters, data], filtering)
+await updateData()
+
+async function updateData() {
+  const allPreferences = await preferencesDB.allDocs({ include_docs: true, });
+  preferencesData = getDocs(allPreferences)
+
+  const allProduct = await productsDB.allDocs({ include_docs: true })
+  data.value = prefMapper(getDocs(allProduct), preferencesData)
 }
 
-function filter() {
+function filtering() {
   const date = new Date().getTime()
 
-  if (!data.value?.filter) return
-  if (!fullCategoryList.value?.filter) return
-
   const productFilterList = createFilterList(filters.productFilter)
-  const categoryPreferenceFilter = createFilterList(filters.categoryFilter)
-  const categoryFilterList = fullCategoryList.value
-    .filter(c => categoryPreferenceFilter.includes(c.preference)).map(c => c.name)
+  let prefiltered = []
 
-  filtered.value = data.value
+  if (filters.categoryFilter.neutral) {
+    const categoryFilterList = creataInvertedFilterList(filters.categoryFilter)
+    const filteredCategories = filterCategories(categoryFilterList)
+    prefiltered = data.value.filter(d => !filteredCategories.includes(d.category))
+  } else {
+    const categoryFilterList = createFilterList(filters.categoryFilter)
+    const filteredCategories = filterCategories(categoryFilterList)
+    prefiltered = data.value.filter(d => filteredCategories.includes(d.category))
+  }
+
+  filtered.value = prefiltered
     .filter((p) => p.startDate < date && p.endDate > date)
-    .filter((p) => p.category ? categoryFilterList.includes(p.category) : true)
     .filter((p) => productFilterList.includes(p.preference))
     .slice(...pageSlice(pageSize, filters.page))
 }
 
-watch([filters, data], filter)
-filter()
-
-async function setPreference(id: number, value: boolean | null) {
-  await optimisticUpdate("/api/products/preference",
-    { productId: id, value: value },
-    product_name,
-    () => {
-      let updated = data.value?.find(p => p.id == id)
-      if (updated) {
-        updated.preference = value
-      }
-    }
-  )
+function filterCategories(categoryFilterList: (boolean | null)[]): (string | null)[] {
+  return preferencesData
+    .filter(p => p.type == PreferenceType.category)
+    .filter(p => categoryFilterList.includes(p.value))
+    .map(p => p._id as string | null);
 }
 
+async function setPreference(id: string, value: boolean | null) {
+  const pref = data.value.find(p => p._id == id)
+  if (pref)
+    pref.preference = value
+  data.value = [...data.value]
+  await preferencesDB.upsert(id, (doc) => {
+    doc.value = value
+    doc.type = PreferenceType.product
+    return doc as Preference
+  })
+}
 </script>
 
 <template>
@@ -76,8 +92,8 @@ async function setPreference(id: number, value: boolean | null) {
 
     <template #content>
       <div class="min-w-64 flex flex-wrap place-content-evenly">
-        <PreferenceFrame v-for="product in filtered" :key="product.id" :preference="product.preference"
-          @preference-change="(event) => setPreference(product.id, event.value)">
+        <PreferenceFrame v-for="product in filtered" :key="product._id" :preference="product.preference"
+          @preference-change="(event) => setPreference(product._id, event.value)">
           <template #content>
             <img :src="product.image ?? ''" class="max-w-60 max-h-64 rounded-xl m-auto mt-2">
             <h3 class="text-center mt-auto">{{ product.name }}</h3>

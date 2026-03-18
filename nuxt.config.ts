@@ -21,20 +21,26 @@ export default defineNuxtConfig({
       background_color: "#ffffff",
     },
     pwaAssets: {
-      image: "../public/icon.png",
+      image: "./public/icon.png",
     },
     workbox: {
-      navigateFallback: "/",
       globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
 
       cleanupOutdatedCaches: true,
       clientsClaim: true
     },
     devOptions: {
-        enabled: true,
-        navigateFallback: '/',
-        type: "module"
-        /* other options */
-      }
+      enabled: true,
+      navigateFallback: '/',
+
+      navigateFallbackAllowlist: [/^\/$/],
+      type: "module"
+      /* other options */
+    }
+  },
+  nitro: {
+    prerender: {
+      routes: ['/'],
+    },
   }
 })
