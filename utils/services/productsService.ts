@@ -20,7 +20,7 @@ import type { Category } from "../types/category";
 import { dbUrl, dbUser, dbPassword } from "../constants"
 
 const cacheDateDifference = 43400000;
-const defaultCron = "0 6 * * *";
+const defaultCron = "0 7 * * *";
 const jobs = [] as CronJob[]
 
 export class ProductsService {
