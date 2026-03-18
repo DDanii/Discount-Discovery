@@ -1,4 +1,4 @@
-<img src="./static/icon.png" alt="icon" width="200"/>
+<img src="./public/icon.png" alt="icon" width="200"/>
 
 # Discount-Discovery
 
@@ -6,9 +6,6 @@ A selfhost app to easyly browse and manage several stores discounts comfortably.
 
 The project is in early stage and only have parsers for some Hungarian stores.
 
-It requires a running CouchDB instance
-
-After launching the app you have to log in to CouchDB in settings.
 
 # Screenshots
 
@@ -19,6 +16,19 @@ After launching the app you have to log in to CouchDB in settings.
 
 # Install
 
+It requires a running CouchDB instance.
+
+And the following environment variables:
+
+```
+COUCHDB_USER
+COUCHDB_PASSWORD
+DISCOUT_DISCOVERY_DB_URL 
+DISCOUT_DISCOVERY_DB_SETUP //default false
+DATABASE_URL="file:/config/database.db"
+```
+
+After launching the app you have to log in to CouchDB in settings.
 
 ### Docker Compose
 
