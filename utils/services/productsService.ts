@@ -31,7 +31,6 @@ export class ProductsService {
       if (fname.endsWith(".yml"))
         await handleConfigFile(fname)
     }
-    console.log("All files done")
   }
 }
 
@@ -131,6 +130,7 @@ class Gathering {
     this.shopDB.logOut()
     this.productDB.logOut()
     this.categryDB.logOut()
+    console.log(`Shop with id: ${shopId} done`)
   }
 
   private async gatherCategories(products: Product[]) {
@@ -151,7 +151,7 @@ class Gathering {
     const mappedProducts = products.map(p => this.mapDates(p, config))
     console.log(`fetched ${mappedProducts.length} product(s)`)
 
-    mappedProducts.forEach((p) => this.saveProduct(p, shopId))
+    mappedProducts.forEach(async (p) => await this.saveProduct(p, shopId))
   }
 
   private async saveProduct(product: Product, shopId: string) {
