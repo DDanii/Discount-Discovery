@@ -39,6 +39,7 @@ async function handleConfigFile(fname: string) {
   console.log(`Handling file: ${fname}`)
   DB.setRemoteUrl(dbUrl ?? null)
   const shopDB = new DB<Shop>(DBLocation.remote, DBName.shop, dbUser, dbPassword)
+  if(!await shopDB.remoteIsLoggedIn()) return
 
   try {
     const file = readFileSync(`store/${fname}`, 'utf8')
@@ -126,6 +127,10 @@ class Gathering {
       doc.lastUpdated = new Date().getTime()
       return doc as Shop
     })
+
+    this.shopDB.logOut()
+    this.productDB.logOut()
+    this.categryDB.logOut()
   }
 
   private async gatherCategories(products: Product[]) {
