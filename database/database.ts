@@ -11,6 +11,8 @@ import type { Category } from '../utils/types/category';
 import { dbSuffix } from '../utils/constants';
 import { Buffer } from "buffer";
 import { exit } from 'process';
+import { useDBLoggedIn, useDBOffline, useDBSyncing, useDBUrlIsSet } from '~/composable/states';
+import type { SyncStatusDictionary } from '~/utils/types/databaseTypes';
 
 //PouchDB.plugin(PouchDBMemory)
 PouchDB.plugin(PouchDBAuthentication)
@@ -32,10 +34,22 @@ export enum DBLocation {
     remote = 'remote'
 }
 
+export enum SyncStatus {
+    active = 'active',
+    complete = 'complete',
+    change = 'change',
+    paused = 'paused',
+    error = 'error',
+    denied = 'denied',
+}
+
+
+
 export class DB<T extends {} = {}> extends PouchDB<T> {
     private static url: string | null
     private static user: string | null
     private static remoteSyncStatus = [] as PouchDB.Replication.Sync<any>[]
+    private static syncStates = {} as SyncStatusDictionary;
 
     constructor(location: DBLocation, name: DBName, user?: string, password?: string) {
         if (user && password) {
@@ -46,8 +60,8 @@ export class DB<T extends {} = {}> extends PouchDB<T> {
                     password: password
                 }
             })
-            this.remoteIsLoggedIn().then((respones) => {
-                if (respones) return
+            this.isRemoteLoggedIn().then((response) => {
+                if (response) return
                 console.log("Database login failed")
                 exit(1)
             })
@@ -86,24 +100,34 @@ export class DB<T extends {} = {}> extends PouchDB<T> {
         DB.user = dbUser
     }
 
-    public async remoteIsLoggedIn(): Promise<boolean> {
+    public async isRemoteLoggedIn(): Promise<boolean> {
         return Boolean(await this.getUserName())
     }
 
     public async getUserName(): Promise<string | null> {
         try {
-            const session = await this.getSession();
+            const session = await super.getSession();
             const name = session.userCtx?.name
             if (name) DB.user = name
+            if (import.meta.client){
+                useDBLoggedIn().value = Boolean(name)
+                useDBOffline().value = false
+            }
+            
             return name
 
         } catch (error) {
-            console.log(error)
-            return null
+            const anyError = error as any
+            if (anyError?.status !== 502 && anyError !== 'ETIMEDOUT') {
+                console.log(error);
+            }
+            if (import.meta.client)
+                useDBOffline().value = true;
+            return null;
         }
     }
 
-    public static urlIsSet(): boolean {
+    public static isUrlSet(): boolean {
         return Boolean(DB.url)
     }
 
@@ -111,6 +135,7 @@ export class DB<T extends {} = {}> extends PouchDB<T> {
         if (url && !url?.endsWith('/'))
             url += '/'
         DB.url = url
+        useDBUrlIsSet().value = Boolean(url)
     }
 
     public static loopAll(fn: { (arg0: DBName): void }) {
@@ -129,11 +154,56 @@ export class DB<T extends {} = {}> extends PouchDB<T> {
     }
 
     public static remoteSync() {
+        if(DB.remoteSyncStatus.length != 0) return
         DB.loopAll(async (dbType) => {
             const localDB = new DB(DBLocation.local, dbType)
             const remoteDB = new DB(DBLocation.remote, dbType)
-            DB.remoteSyncStatus.push(localDB.sync(remoteDB, syncParameters))
+            const sync = localDB.sync(remoteDB, syncParameters)
+            DB.remoteSyncStatus.push(sync)
+            // loopSyncStatuses((syncStatus) => {  // type script compiler doesn't likes it
+            //     if(syncStatus == SyncStatus.active )
+            //         sync.on(syncStatus as keyof typeof SyncStatus, () => { this.setSyncStatus(dbType, syncStatus})
+            // })
+            let value = useDBSyncing().value
+            sync.on(SyncStatus.complete, () => {
+                this.setSyncStatus(dbType, SyncStatus.complete);
+
+            })
+            sync.on(SyncStatus.active, () => {
+                this.setSyncStatus(dbType, SyncStatus.active)
+
+            })
+            sync.on(SyncStatus.change, () => {
+                this.setSyncStatus(dbType, SyncStatus.change)
+
+            })
+            sync.on(SyncStatus.paused, () => {
+                this.setSyncStatus(dbType, SyncStatus.paused)
+
+            })
+            sync.on(SyncStatus.denied, () => {
+                this.setSyncStatus(dbType, SyncStatus.denied)
+
+            })
+            sync.on(SyncStatus.error, () => {
+                this.setSyncStatus(dbType, SyncStatus.error)
+            })
         })
+    }
+
+    private static setSyncStatus(dbName: DBName, syncStatus: SyncStatus) {
+        DB.syncStates[dbName] = syncStatus;
+        DB.updateSyncStatus()
+    }
+
+    public static updateSyncStatus() {
+        let syncing = false
+        DB.loopAll((name) => {
+            if (DB.syncStates[name] == SyncStatus.active || DB.syncStates[name] == SyncStatus.change)
+                syncing = true
+        })
+        if (syncing) useDBOffline().value = false
+        useDBSyncing().value = syncing
     }
 
     public override logOut() {
@@ -142,6 +212,13 @@ export class DB<T extends {} = {}> extends PouchDB<T> {
         return super.logOut()
     }
 }
+
+// function loopSyncStatuses(fn: { (args0: SyncStatus): void }) {
+//     for (let item in SyncStatus) {
+//         const syncType = SyncStatus[item as keyof typeof SyncStatus]
+//         fn(syncType)
+//     }
+// }
 
 export class PreferencesDB extends DB<Preference> {
     constructor() {
@@ -180,38 +257,6 @@ export function docMap<T extends {}>(doc: PouchDB.Core.ExistingDocument<T & Pouc
     delete doc?._conflicts
     return doc ?? {} as T
 }
-
-// export async function prefFilteringSetup(filter: Filter, type: PreferenceType): Promise<FilteringSetupResult> {
-//     let prefFilter = {} as PouchDB.Find.ConditionOperators
-//     const preferencesDB = new PreferencesDB
-//     if (filter.neutral) {
-//         prefFilter = { $nin: creataInvertedFilterList(filter) }
-//     } else {
-//         prefFilter = { $in: createFilterList(filter) }
-//     }
-//     const wantedPreferences = (await preferencesDB.find({
-//         selector: {
-//             $and: [
-//                 { type: type },
-//                 { value: prefFilter }
-//             ]
-//         }
-//     })).docs;
-
-//     const idList = wantedPreferences.map(d => d._id)
-
-//     let result = {} as FilteringSetupResult
-
-//     result.wantedPrefs = wantedPreferences
-
-//     if (filter.neutral) {
-//         result.filterOperator = { $nin: idList }
-//     } else {
-//         result.filterOperator = { $in: idList }
-//     }
-
-//     return result
-// }
 
 export async function getSettings(): Promise<Settings> {
     const userDB = new DB<Settings>(DBLocation.mem, DBName.user)

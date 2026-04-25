@@ -9,16 +9,11 @@ services:
       - "3000:3000"
     environment:
       <<: *common-env
-      DATABASE_URL: file:/config/dev.db
       DISCOUT_DISCOVERY_DB_URL: http://couchdb:5984
       DISCOUT_DISCOVERY_DB_SETUP: true
-    volumes:
-      - type: bind
-        source: ./prisma/
-        target: /config/
     depends_on: 
-      - couchdb
-
+      couchdb:
+        condition: service_healthy
 
   couchdb:
     image: couchdb
@@ -33,5 +28,9 @@ services:
       - type: bind
         source: ../couchdb/local.d
         target: /opt/couchdb/etc/local.d
-
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5984/_up"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   

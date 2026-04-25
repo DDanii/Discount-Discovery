@@ -1,24 +1,41 @@
 <script setup lang="ts">
-import { useDBLoggedIn, useSideBarOpen } from './composable/states';
-import { dbRemoteUrl_name } from './utils/constants';
+import { useDBLoggedIn, useDBOffline, useDBSyncing, useDBUrlIsSet, useSideBarOpen } from './composable/states';
 import { DB, DBLocation, DBName } from './database/database';
 
 const sidebarOpen = useSideBarOpen()
-
-DB.setRemoteUrl(localStorage.getItem(dbRemoteUrl_name))
-
+const dbUrlIsSet = useDBUrlIsSet()
+const dbOffline = useDBOffline()
+const dbSyncing = useDBSyncing()
 const loggedIn = useDBLoggedIn()
-watch(loggedIn, trySync)
+
+let remoteDB = null as null | DB
+
+const dbUrl = localStorage.getItem(dbRemoteUrl_name)
+DB.setRemoteUrl(dbUrl)
+dbUrlIsSet.value = DB.isUrlSet()
+let timer: NodeJS.Timeout | null
+
+watch([loggedIn, dbOffline], trySync)
 await trySync()
 
 async function trySync() {
-  if (!DB.urlIsSet()) return
-  const remoteDB = new DB(DBLocation.remote, DBName.shop)
-  if (!await remoteDB.remoteIsLoggedIn()) {
+  if (!DB.isUrlSet()) {
+    if(timer) clearInterval(timer)
+    return
+  }
+  remoteDB = new DB(DBLocation.remote, DBName.shop)
+  if (!timer) 
+    timer = setInterval(dbStatusUpdate, 60000)
+  if (!await remoteDB.isRemoteLoggedIn()) {
     loggedIn.value = false
     return
   }
   DB.remoteSync()
+}
+
+function dbStatusUpdate(){
+  if(remoteDB)
+    remoteDB.getUserName()
 }
 
 </script>
@@ -39,12 +56,17 @@ async function trySync() {
         <NuxtLink class="w-full" to="./categories">
           <IconCategoryPreference />
         </NuxtLink>
-
       </div>
       <button class="bg-black rounded-full  w-fit border-2 
-          flex content-center overflow-clip">
+          flex content-center overflow-clip"
+          :class="{
+            ['border-yellow-500']: dbOffline, 
+            ['border-red-600']: !dbUrlIsSet || ( !dbOffline && !loggedIn ),
+            ['animate-spin']: dbSyncing,
+            ['border-t-green-500']: dbSyncing,
+            ['border-b-green-500']: dbSyncing}">
         <NuxtLink to="/AppSettings" class="p-1 w-fit">
-          <IconCog />
+          <IconCog :class="{['animate-[rev-spin_1s_linear_infinite]']: dbSyncing}" />
         </NuxtLink>
       </button>
     </nav>

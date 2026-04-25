@@ -21,9 +21,5 @@ logs
 # Local env files
 !.env.example
 
-#store
-/prisma/generated
-
-dev.db
 
 sw.*

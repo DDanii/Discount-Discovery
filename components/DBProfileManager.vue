@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useDBLoggedIn } from '~/composable/states';
+import { useDBLoggedIn, useDBUrlIsSet } from '~/composable/states';
 import { DB, DBLocation, DBName } from '~/database/database';
 
 const loggedIn = useDBLoggedIn()
@@ -9,17 +9,16 @@ const password = ref('')
 const user = ref('')
 const remoteDB = ref(null as DB | null)
 const url = ref(localStorage.getItem(dbRemoteUrl_name))
-const urlIsSet = ref(DB.urlIsSet())
+const isUrlSet = useDBUrlIsSet()
 
 async function initialize() {
     remoteDB.value = null
     user.value = ''
 
-    urlIsSet.value = DB.urlIsSet()
-    if (!DB.urlIsSet()) return
+    if (!isUrlSet.value) return
 
     remoteDB.value = new DB(DBLocation.remote, DBName.shop)
-    loggedIn.value = await remoteDB.value.remoteIsLoggedIn()
+    loggedIn.value = await remoteDB.value.isRemoteLoggedIn()
     user.value = await remoteDB.value.getUserName() ?? ''
 }
 initialize()
@@ -34,9 +33,8 @@ async function onLogIn() {
             initialize()
         })
     } catch (error: any) {
-        let text = error
-        if (error.message) text = error.messag
-
+        let text = error.message ?? error
+        
         useToast().error({ message: text, color: "#dc2626" })
     }
 }
@@ -62,17 +60,17 @@ function urlSet() {
 </script>
 <template>
     <div class="rounded-xl border-2 m-2 overflow-hidden min-h-fit flex flex-col">
-        <div class="border-b-2  flex justify-center">
+        <div class="flex justify-center">
             <IconCouch class="fill-red-600" />
             <IconDatabase />
         </div>
-        <div class="flex grow items-center">
+        <div class="flex grow items-center border-t-2">
             <div class="h-full w-full border-r-2 flex items-center">
                 <IconUrl class="ml-2 min-h-fit min-w-fit" />
-                <text v-if="urlIsSet" class="grow m-2 text-wrap overflow-hidden">{{ url }}</text>
-                <input v-else type="text" :disabled="urlIsSet" v-model="url" class="bg-black border-2 h-8 m-2" />
+                <text v-if="isUrlSet" class="grow m-2 text-wrap overflow-hidden">{{ url }}</text>
+                <input v-else type="text" :disabled="isUrlSet" v-model="url" class="bg-black border-2 h-8 m-2" />
             </div>
-            <button v-if="urlIsSet" @click="urlUnset" class="h-full">
+            <button v-if="isUrlSet" @click="urlUnset" class="h-full">
                 <IconLogout />
             </button>
             <button v-else @click="urlSet" class="h-full">
@@ -80,7 +78,7 @@ function urlSet() {
             </button>
         </div>
         
-        <div v-if="urlIsSet" class="flex grow border-t-2 items-center">
+        <div v-if="isUrlSet" class="flex grow items-center border-t-2">
             <div class="grow border-r-2 h-full flex flex-col justify-center">
                 <div class="flex p-2">
                     <IconUser class="mr-2" />

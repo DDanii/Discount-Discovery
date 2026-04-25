@@ -29,18 +29,15 @@ export default defineNuxtConfig({
       cleanupOutdatedCaches: true,
       clientsClaim: true
     },
-    devOptions: {
-      enabled: true,
-      navigateFallback: '/',
-
-      navigateFallbackAllowlist: [/^\/$/],
-      type: "module"
-      /* other options */
-    }
   },
   nitro: {
     prerender: {
       routes: ['/'],
     },
+  },
+  server:{
+    builder:{
+
+    }
   }
 })

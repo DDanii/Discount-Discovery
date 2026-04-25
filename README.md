@@ -24,8 +24,9 @@ And the following environment variables:
 COUCHDB_USER
 COUCHDB_PASSWORD
 DISCOUT_DISCOVERY_DB_URL 
+
+#optionals:
 DISCOUT_DISCOVERY_DB_SETUP //default false
-DATABASE_URL="file:/config/database.db"
 ```
 
 After launching the app you have to log in to CouchDB in settings.

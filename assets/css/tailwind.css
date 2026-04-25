@@ -5,7 +5,13 @@
 @tailwind utilities;
 
 @layer base {
-  *{
-    border-color: oklch(62.7% 0.194 149.214); 
+  * {
+    border-color: oklch(62.7% 0.194 149.214);
+  }
+}
+
+@keyframes rev-spin {
+  to {
+    transform: rotate(-360deg);
   }
 }

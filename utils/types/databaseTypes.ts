@@ -1,3 +1,4 @@
+import type { SyncStatus } from "~/database/database"
 import type { GenericPreference } from "./preference"
 
 export type DatabaseDoc = {
@@ -10,3 +11,7 @@ export function databaseDocsEqual(first: DatabaseDoc, second: DatabaseDoc): bool
 
 export type DocWithPref =
     DatabaseDoc & GenericPreference
+
+export interface SyncStatusDictionary {
+    [index: string]: SyncStatus;
+}
