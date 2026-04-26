@@ -168,7 +168,7 @@ steps:
                   steps:
                       - stepParameters: 
                           method: SetProp
-                          source: data.code
+                          source: data.gridbox.data.ians.0
                           destination: product.externalId
                       - stepParameters: 
                           method: SetProp
@@ -189,7 +189,7 @@ steps:
                           destination: product.price
                       - stepParameters:
                           method: SetProp
-                          source: data.gridbox.meta.campaignPaths.0.0.name
+                          source: data.gridbox.meta.worldOfNeeds.0.name
                           destination: product.category
                       - stepParameters: 
                           method: SetProp
