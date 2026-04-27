@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { parse as HTMLParse } from "node-html-parser";
-import { readdirSync, readFileSync } from "fs";
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "fs";
 import {
   type ParseStep, StepType, type SetPropParameters,
   type ForEachParameters, type PushToArrayParameters,
@@ -17,8 +17,9 @@ import { DB, DBLocation, DBName, docMap } from "~/database/database";
 import type { Shop } from "../types/shop";
 import { productsEqual, type Product } from "../types/product";
 import type { Category } from "../types/category";
-import { dbUrl, dbUser, dbPassword } from "../constants"
+import { dbUrl, dbUser, dbPassword, debugSaveFetch, debugSavePath } from "../constants"
 import { setTimeout } from "timers/promises";
+import filenamify from "filenamify";
 
 const cacheDateDifference = 43400000;
 const defaultCron = "0 7 * * *";
@@ -286,6 +287,11 @@ async function FetchStep(parameters: FetchParameters, data: any): Promise<any> {
   if (!response.ok)
     console.log(`${response.url}: ${response.status}`)
   data.data = await (response).text()
+  if (debugSaveFetch){
+    const path = `${debugSavePath}/fetch/${filenamify(request.url)}`
+    mkdirSync(path, {recursive: true})
+    writeFileSync(`${path}/t${(new Date()).getTime()}.txt`, data.data)
+  }
   return data;
 }
 

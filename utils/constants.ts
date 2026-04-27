@@ -16,5 +16,10 @@ export const true_string = 'true'
 export const dbUser = env.COUCHDB_USER
 export const dbPassword = env.COUCHDB_PASSWORD
 export const dbUrl = env.DISCOUT_DISCOVERY_DB_URL
-export const dbSetup = Boolean(env.DISCOUT_DISCOVERY_DB_SETUP?.toLowerCase() == true_string)
+export const dbSetup = isTrueString(env.DISCOUT_DISCOVERY_DB_SETUP)
+export const debugSaveFetch = isTrueString(env.DISCOUT_DISCOVERY_DEBUG_SAVE_FETCH)
+export const debugSavePath = env.DISCOUT_DISCOVERY_DEBUG_SAVE_PATH ?? "/config/debug"
 
+function isTrueString(str: string | undefined): boolean{
+    return str?.toLowerCase() == true_string
+}

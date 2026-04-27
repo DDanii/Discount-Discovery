@@ -168,7 +168,7 @@ steps:
                   steps:
                       - stepParameters: 
                           method: SetProp
-                          source: data.gridbox.data.ians.0
+                          source: data.code
                           destination: product.externalId
                       - stepParameters: 
                           method: SetProp

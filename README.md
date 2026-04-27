@@ -27,6 +27,8 @@ DISCOUT_DISCOVERY_DB_URL
 
 #optionals:
 DISCOUT_DISCOVERY_DB_SETUP //default false
+DISCOUT_DISCOVERY_DEBUG_SAVE_FETCH //default false; saves all shop fetch body
+DISCOUT_DISCOVERY_DEBUG_SAVE_PATH //default /config/debug
 ```
 
 After launching the app you have to log in to CouchDB in settings.
@@ -50,6 +52,6 @@ docker compose up -d
 - [ ] shop sources from settings
 - [ ] user management
 - [x] offline first
-- [ ] data syncronication indicator
+- [x] data syncronication indicator
 - [ ] merged view
 
