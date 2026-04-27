@@ -17,7 +17,8 @@ function updateSettings() {
 </script>
 
 <template>
-  <div class="flex flex-wrap">
+  <div class="flex flex-wrap overflow-y-auto"
+            style="scrollbar-color:rgb(22 163 74 / 1) rgb(5 46 22 / 1);">
     <div class="rounded-xl border-yellow-500 border-2 w-fit m-2">
       <IconProductPreference />
       <div class="flex border-t-2 border-yellow-500 flex-wrap place-content-center">

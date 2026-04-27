@@ -1,254 +1,271 @@
 autoCorrectYears: true
 setEndDateToDayEnd: true
 name: Lidl
+icon: https://www.lidl.hu/cdn/assets/logos/1.0.0/logo.svg
 steps:
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: "https://www.lidl.hu/q/api/search?q=*&locale=hu_HU&assortment=HU&version=2.1.0&fetchsize=100"
       destination: link
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: ""
       destination: empty
-  - stepParameters: 
+  - stepParameters:
+      method: Literal
+      data: "true"
+      destination: "true"
+  - stepParameters:
       method: Literal
       data: .
-  - stepParameters: 
+  - stepParameters:
       method: Concat
       first: currentYear
-  - stepParameters: 
+  - stepParameters:
       method: SetProp
       destination: currentYear
   - stepParameters:
       method: CreateArray
       name: linkArray
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: "&offset=0"
-  - stepParameters: 
+  - stepParameters:
       method: PushToArray
       array: linkArray
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: "&offset=100"
-  - stepParameters: 
+  - stepParameters:
       method: PushToArray
       array: linkArray
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: "&offset=200"
-  - stepParameters: 
+  - stepParameters:
       method: PushToArray
       array: linkArray
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: "&offset=300"
-  - stepParameters: 
+  - stepParameters:
       method: PushToArray
       array: linkArray
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: "&offset=400"
-  - stepParameters: 
+  - stepParameters:
       method: PushToArray
       array: linkArray
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: "&offset=500"
-  - stepParameters: 
+  - stepParameters:
       method: PushToArray
       array: linkArray
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: "&offset=600"
-  - stepParameters: 
+  - stepParameters:
       method: PushToArray
       array: linkArray
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: "&offset=700"
-  - stepParameters: 
+  - stepParameters:
       method: PushToArray
       array: linkArray
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: "&offset=800"
-  - stepParameters: 
+  - stepParameters:
       method: PushToArray
       array: linkArray
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: "&offset=900"
-  - stepParameters: 
+  - stepParameters:
       method: PushToArray
       array: linkArray
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: "&offset=1000"
-  - stepParameters: 
+  - stepParameters:
       method: PushToArray
       array: linkArray
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: "&offset=1100"
-  - stepParameters: 
+  - stepParameters:
       method: PushToArray
       array: linkArray
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: "&offset=1200"
-  - stepParameters: 
+  - stepParameters:
       method: PushToArray
       array: linkArray
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: "&offset=1300"
-  - stepParameters: 
+  - stepParameters:
       method: PushToArray
       array: linkArray
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: "&offset=1400"
-  - stepParameters: 
+  - stepParameters:
       method: PushToArray
       array: linkArray
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: "&offset=1500"
-  - stepParameters: 
+  - stepParameters:
       method: PushToArray
       array: linkArray
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: "&offset=1600"
-  - stepParameters: 
+  - stepParameters:
       method: PushToArray
       array: linkArray
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: "&offset=1700"
-  - stepParameters: 
+  - stepParameters:
       method: PushToArray
       array: linkArray
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: "&offset=1800"
-  - stepParameters: 
+  - stepParameters:
       method: PushToArray
       array: linkArray
-  - stepParameters: 
+  - stepParameters:
       method: Literal
       data: "&offset=1900"
-  - stepParameters: 
+  - stepParameters:
       method: PushToArray
       array: linkArray
 
-  - stepParameters: 
+  - stepParameters:
       method: ForEach
       source: linkArray
       steps:
-        - stepParameters: 
+        - stepParameters:
             method: Concat
             first: link
-        - stepParameters: 
+        - stepParameters:
             method: Fetch
-        - stepParameters: 
+        - stepParameters:
             method: ParseJSON
-        - stepParameters: 
+        - stepParameters:
             method: SetProp
             source: data.items
             destination: items
-        - stepParameters: 
+        - stepParameters:
             method: If
             data: items
             steps:
-              - stepParameters: 
+              - stepParameters:
                   method: ForEach
                   source: items
                   steps:
-                      - stepParameters: 
-                          method: SetProp
-                          source: data.code
-                          destination: product.externalId
-                      - stepParameters: 
-                          method: SetProp
-                          source: data.gridbox.meta.fullTitle
-                          destination: product.name
-                      - stepParameters: 
-                          method: SetProp
-                          source: data.gridbox.data.image
-                          destination: product.image
-                      - stepParameters: 
-                          method: SetProp
-                          destination: tmp
-                      - stepParameters: 
-                          method: DeepCopy
-                      - stepParameters: 
-                          method: SetProp
-                          source: data.gridbox.data.price.price
-                          destination: product.price
-                      - stepParameters:
-                          method: SetProp
-                          source: data.gridbox.meta.worldOfNeeds.0.name
-                          destination: product.category
-                      - stepParameters: 
-                          method: SetProp
-                          source: data.gridbox.data.stockAvailability
-                      - stepParameters: 
-                          method: If
-                          steps:
+                    - stepParameters:
+                        method: SetProp
+                        source: data.code
+                        destination: product.externalId
+                    - stepParameters:
+                        method: SetProp
+                        source: data.gridbox.meta.fullTitle
+                        destination: product.name
+                    - stepParameters:
+                        method: SetProp
+                        source: data.gridbox.data.image
+                        destination: product.image
+                    - stepParameters:
+                        method: SetProp
+                        destination: tmp
+                    - stepParameters:
+                        method: DeepCopy
+                    - stepParameters:
+                        method: If
+                        data: data.gridbox.data.lidlPlus.0.price.price
+                        steps:
+                          - stepParameters:
+                              method: SetProp
+                              source: data.gridbox.data.lidlPlus.0.price.price
+                              destination: product.price
                           - stepParameters: 
+                              method: SetProp
+                              source: data.true
+                              destination: product.warning
+                        elseSteps:
+                          - stepParameters:
+                              method: SetProp
+                              source: data.gridbox.data.price.price
+                              destination: product.price
+                    - stepParameters:
+                        method: SetProp
+                        source: data.gridbox.meta.worldOfNeeds.0.name
+                        destination: product.category
+                    - stepParameters:
+                        method: SetProp
+                        source: data.gridbox.data.stockAvailability
+                    - stepParameters:
+                        method: If
+                        steps:
+                          - stepParameters:
                               method: SetProp
                               source: data.badgeInfo.badges.0.text
-                          - stepParameters: 
+                          - stepParameters:
                               method: Split
                               separator: ": "
-                          - stepParameters: 
+                          - stepParameters:
                               method: SetProp
                               source: data.1
-                          - stepParameters: 
+                          - stepParameters:
                               method: If
                               steps:
-                                  - stepParameters: 
-                                      method: SetProp
-                                      destination: dateTmp
-                                  - stepParameters: 
-                                      method: DeepCopy
-                                  - stepParameters: 
-                                      method: Split
-                                      separator: " - "
-                                  - stepParameters: 
-                                      method: SetProp
-                                      source: data.1
-                                  - stepParameters: 
-                                      method: If
-                                      steps:
-                                          - stepParameters: 
-                                              method: Concat
-                                              first: currentYear
-                                          - stepParameters: 
-                                              method: SetProp
-                                              destination: product.endDate
-                                          - stepParameters: 
-                                              method: SetProp
-                                              source: dateTmp
-                                          - stepParameters: 
-                                              method: Split
-                                              separator: " - "
-                                          - stepParameters: 
-                                              method: Concat
-                                              first: currentYear
-                                              second: data.0
-                                          - stepParameters: 
-                                              method: SetProp
-                                              destination: product.startDate
-                                      elseSteps:
-                                          - stepParameters: 
-                                              method: SetProp
-                                              source: empty
-                                              destination: product.startDate
-                          - stepParameters: 
+                                - stepParameters:
+                                    method: SetProp
+                                    destination: dateTmp
+                                - stepParameters:
+                                    method: DeepCopy
+                                - stepParameters:
+                                    method: Split
+                                    separator: " - "
+                                - stepParameters:
+                                    method: SetProp
+                                    source: data.1
+                                - stepParameters:
+                                    method: If
+                                    steps:
+                                      - stepParameters:
+                                          method: Concat
+                                          first: currentYear
+                                      - stepParameters:
+                                          method: SetProp
+                                          destination: product.endDate
+                                      - stepParameters:
+                                          method: SetProp
+                                          source: dateTmp
+                                      - stepParameters:
+                                          method: Split
+                                          separator: " - "
+                                      - stepParameters:
+                                          method: Concat
+                                          first: currentYear
+                                          second: data.0
+                                      - stepParameters:
+                                          method: SetProp
+                                          destination: product.startDate
+                                    elseSteps:
+                                      - stepParameters:
+                                          method: SetProp
+                                          source: empty
+                                          destination: product.startDate
+                          - stepParameters:
                               method: PushToArray
                               array: DDParsedProducts
                               data: product
-    

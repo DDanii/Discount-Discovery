@@ -16,8 +16,10 @@ function onClick(page: number) {
 <template>
     <div class="flex flex-wrap h-full w-full overflow-hidden">
         <div :class="{ ['collapse']: !sidebarOpen }"
-            class="w-full min-w-fit h-full flex place-content-center flex-shrink-0 basis-0 flex-grow bg-green-950 border-r-2 ">
-            <div class="flex flex-col place-content-center h-full w-fit">
+            class="w-full min-w-fit h-full flex place-content-center flex-shrink-0 basis-0 flex-grow bg-green-950 border-r-2 overflow-scroll"
+            style="scrollbar-color:rgb(22 163 74 / 1) rgb(5 46 22 / 1);">
+
+        <div class="flex flex-col h-full w-fit m-auto">
                 <slot name="sideBar"></slot>
             </div>
         </div>

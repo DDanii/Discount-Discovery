@@ -1,5 +1,6 @@
 name: Penny
 setEndDateToDayEnd: true
+icon: https://assets-eu-01.kc-usercontent.com/843d8585-7c09-01cb-fcf9-c09b438b114d/0f0db4ad-169b-419b-8347-412d5a79df3c/loyalty_price_badge.png?fm=webp&lossless=0&q=80&dpr=1
 steps:
   - stepParameters:
       method: CreateArray

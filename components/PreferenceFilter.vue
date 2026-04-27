@@ -7,7 +7,7 @@ const props = defineProps<{
 
 </script>
 <template>
-    <div class="rounded-xl border-2  max-w-44 m-2 bg-black flex flex-col">
+    <div class="rounded-xl border-2  max-w-44 bg-black flex flex-col m-1">
         <div class="border-b-2 ">
             <slot name="header" />
         </div>

@@ -9,7 +9,7 @@ import { defaultProductFilters } from '~/utils/types/Filter';
 import { prefMapper } from '~/utils/utils';
 
 const settings = await getSettings()
-const filters = reactive(defaultProductFilters())
+const filters = reactive(await defaultProductFilters())
 Object.assign(filters.productFilter, settings?.productFilters)
 Object.assign(filters.categoryFilter, settings?.productByCategoryFilters)
 
@@ -48,10 +48,12 @@ function filtering() {
     const filteredCategories = filterCategories(categoryFilterList)
     prefiltered = data.value.filter(d => filteredCategories.includes(d.category))
   }
-
+  
   filtered.value = prefiltered
     .filter((p) => p.startDate < date && p.endDate > date)
     .filter((p) => productFilterList.includes(p.preference))
+    .filter((p) => filters.shops.find((s) => s.shopId == p.shopId)?.enabled)
+    .filter((p) => p.name?.toLowerCase().includes(filters.name.toLowerCase()))
     .slice(...pageSlice(pageSize, filters.page))
 }
 
@@ -78,16 +80,7 @@ async function setPreference(id: string, value: boolean | null) {
 <template>
   <PageWithSideBar :pageFilter=filters>
     <template #sideBar>
-      <PreferenceFilter :filter=filters.productFilter>
-        <template #header>
-          <IconProductPreference />
-        </template>
-      </PreferenceFilter>
-      <PreferenceFilter :filter=filters.categoryFilter>
-        <template #header>
-          <IconCategoryPreference />
-        </template>
-      </PreferenceFilter>
+      <ProductFilters :filters="filters"/>
     </template>
 
     <template #content>

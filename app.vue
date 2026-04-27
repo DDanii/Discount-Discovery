@@ -60,7 +60,7 @@ function dbStatusUpdate(){
       <button class="bg-black rounded-full  w-fit border-2 
           flex content-center overflow-clip"
           :class="{
-            ['border-yellow-500']: dbOffline, 
+            ['border-yellow-500']: dbUrlIsSet && dbOffline, 
             ['border-red-600']: !dbUrlIsSet || ( !dbOffline && !loggedIn ),
             ['animate-spin']: dbSyncing,
             ['border-t-green-500']: dbSyncing,

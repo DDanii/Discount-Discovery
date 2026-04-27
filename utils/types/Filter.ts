@@ -1,5 +1,4 @@
-import type { Preference } from "./preference";
-
+import { getDocs, ShopDB } from "~/database/database"
 
 /**
  * its a function instead of const so it
@@ -14,13 +13,30 @@ export function defaultFilter(): Filter{
 }
 
 export type Filter = {
-    liked: boolean;
-    neutral: boolean;
-    disliked: boolean;
+    liked: boolean
+    neutral: boolean
+    disliked: boolean
 }
 
 export type PageFilter = {
-    page: number;
+    page: number
+}
+
+export type ShopFilter = {
+    shopId: string
+    enabled: boolean
+}
+
+export async function defaultShopsFilter(): Promise<ShopFilter[]> {
+    const db = new ShopDB()
+    const shops = await db.allDocs({include_docs: true})
+    const shopFilters = [] as ShopFilter[]
+    console.log(shops)
+    for (const shop of getDocs(shops)){
+        console.log(shop)
+        shopFilters.push({shopId: shop._id, enabled: true})
+    }
+    return shopFilters
 }
 
 export type FilterWithPage = Filter & PageFilter
@@ -33,12 +49,16 @@ export function defaultFilterWithPage(): FilterWithPage {
 }
 
 export type ProductFilters = PageFilter & {
+    name: string
+    shops: ShopFilter[]
     productFilter: Filter
     categoryFilter: Filter
 }
 
-export function defaultProductFilters(): ProductFilters {
+export async function defaultProductFilters(): Promise<ProductFilters> {
     return {
+        name: "",
+        shops: await defaultShopsFilter(),
         productFilter: defaultFilter(),
         categoryFilter: defaultFilter(),
         page: 0

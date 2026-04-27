@@ -1,4 +1,5 @@
 name: Aldi
+icon: https://s7g10.scene7.com/is/image/aldi/ALDI_HU_Logo_Header?$G05-Logo-M$&fmt=png-alpha
 steps:
   - stepParameters: 
       method: Literal

@@ -275,7 +275,7 @@ async function FetchStep(parameters: FetchParameters, data: any): Promise<any> {
   console.log(`fetching: ${data.data}`)
   const request = new Request(data.data)
   if (parameters.headersSource) {
-    for (const header of data[parameters.headersSource]) {
+    for (const header of getValue(data, parameters.headersSource)) {
       const key = Object.keys(header)[0];
       const value = Object.values<string>(header)[0];
       if (key && value) {
@@ -311,7 +311,7 @@ function pushToArray(parameters: PushToArrayParameters, data: any): any {
 }
 
 async function forEachStep(stepParameters: ForEachParameters, data: any): Promise<any> {
-  const source = data[stepParameters.source]
+  const source = getValue(data,stepParameters.source)
   try {
     for (const element of source) {
       data.data = element
@@ -340,10 +340,10 @@ function setProp(stepParameters: SetPropParameters, data: any): any {
 
 function HTMLQuerySelector(stepParameters: HTMLQuerySelectorParameters, data: any): any {
   if (stepParameters.all) {
-    data.data = (data.data as HTMLElement).querySelectorAll(data[stepParameters.selector])
+    data.data = (data.data as HTMLElement).querySelectorAll(getValue(data, stepParameters.selector))
   }
   else {
-    data.data = (data.data as HTMLElement).querySelector(data[stepParameters.selector])
+    data.data = (data.data as HTMLElement).querySelector(getValue(data, stepParameters.selector))
   }
   return data
 }
@@ -372,7 +372,7 @@ function SpreadStep(stepParameters: SpreadParameters, data: any): any {
 }
 
 async function IfStep(stepParameters: IfParameters, data: any): Promise<any> {
-  const condition = stepParameters.data ? data[stepParameters.data] : data.data
+  const condition = stepParameters.data ? getValue(data, stepParameters.data) : data.data
   if (condition) {
     return await stepsManager(deepCopy(stepParameters.steps), data)
   }

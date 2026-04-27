@@ -54,4 +54,5 @@ docker compose up -d
 - [x] offline first
 - [x] data syncronication indicator
 - [ ] merged view
+- [ ] cache an extra item as hidden to preload picture
 

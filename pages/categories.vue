@@ -5,6 +5,7 @@ import { CategoryDB, getDocs, getSettings, PreferencesDB } from '~/database/data
 import { PreferenceType, type Preference } from '~/utils/types/preference';
 import { prefMapper } from '~/utils/utils';
 
+const nameFilter = ref("")
 const settings = await getSettings()
 const categoriesDB = new CategoryDB()
 const preferencesDB = new PreferencesDB()
@@ -24,7 +25,7 @@ async function updateData() {
 setDefaultFilters()
 await updateData()
 
-watch([filters, data], filtering)
+watch([filters, data, nameFilter], filtering)
 filtering()
 
 function setDefaultFilters() {
@@ -38,6 +39,7 @@ function filtering() {
 
   filtered.value = data.value
     .filter(c => categoryPreferenceFilter.includes(c.preference))
+    .filter(c => c._id.toLowerCase().includes(nameFilter.value.toLowerCase()))
     .slice(...pageSlice(pageSize, filters.page))
 }
 
@@ -57,6 +59,7 @@ async function setPreference(id: string, value: boolean | null) {
 <template>
   <PageWithSideBar :pageFilter=filters>
     <template #sideBar>
+        <input type="text" v-model="nameFilter" class="bg-black border-2 rounded-xl m-1 max-w-44 p-2" />
       <PreferenceFilter :filter=filters>
         <template #header>
           <IconCategoryPreference />
