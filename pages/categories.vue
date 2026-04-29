@@ -48,11 +48,11 @@ async function setPreference(id: string, value: boolean | null) {
   if (pref)
     pref.preference = value
   data.value = [...data.value]
-  console.log(await preferencesDB.upsert(id, (doc) => {
+  await preferencesDB.upsert(id, (doc) => {
     doc.value = value
     doc.type = PreferenceType.category
     return doc as Preference
-  }))
+  })
 }
 </script>
 

@@ -31,9 +31,7 @@ export async function defaultShopsFilter(): Promise<ShopFilter[]> {
     const db = new ShopDB()
     const shops = await db.allDocs({include_docs: true})
     const shopFilters = [] as ShopFilter[]
-    console.log(shops)
     for (const shop of getDocs(shops)){
-        console.log(shop)
         shopFilters.push({shopId: shop._id, enabled: true})
     }
     return shopFilters
